@@ -110,6 +110,15 @@ export interface PlayCall {
   t: number; // timestamp
 }
 
+// Multi-team
+export interface Team {
+  id: string;
+  name: string;
+  ageGroup?: string; // "U10", "U12", etc.
+  color?: string; // hex color for branding
+  createdAt: number;
+}
+
 // Practice planner
 export interface PracticeBlock {
   id: string;

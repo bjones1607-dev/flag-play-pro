@@ -12,6 +12,8 @@ import { HuddleView } from "@/components/HuddleView";
 import { GameTracker } from "@/components/GameTracker";
 import { PlayHistoryStrip } from "@/components/PlayHistoryStrip";
 import { PracticePanel } from "@/components/PracticePanel";
+import { TeamSwitcher } from "@/components/TeamSwitcher";
+import { SuggesterPanel } from "@/components/SuggesterPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -34,6 +36,7 @@ import {
   ClipboardList,
   AlertTriangle,
   Calendar,
+  Play as PlayIcon,
 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -75,6 +78,8 @@ function Index() {
   const [activeTags, setActiveTags] = useState<Set<PlayTag>>(new Set());
   const [favOnly, setFavOnly] = useState(false);
   const [mirror, setMirror] = useState(false);
+  const [animateKey, setAnimateKey] = useState(0);
+  const [animating, setAnimating] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
 
@@ -251,11 +256,11 @@ function Index() {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
         <div className="px-4 py-3 flex items-center justify-between gap-2">
-          <div>
-            <h1 className="font-display text-2xl leading-none text-primary">FLAG · 6V6</h1>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Coach's Playbook
-            </p>
+          <div className="min-w-0">
+            <h1 className="font-display text-xl leading-none text-primary">FLAG · 6V6</h1>
+            <div className="mt-0.5">
+              <TeamSwitcher />
+            </div>
           </div>
           <div className="flex gap-1">
             <Sheet open={practiceOpen} onOpenChange={setPracticeOpen}>
@@ -480,6 +485,25 @@ function Index() {
               />
             )}
 
+            {/* AI Suggestions */}
+            <SuggesterPanel
+              candidates={allPlays}
+              game={game}
+              history={game.history}
+              defense={defense}
+              onPick={(id) => {
+                if (filtered.find((p) => p.id === id)) setSelectedId(id);
+                else {
+                  // Different defense — switch and select
+                  const p = allPlays.find((x) => x.id === id);
+                  if (p) {
+                    setDefense(p.defense);
+                    setSelectedId(p.id);
+                  }
+                }
+              }}
+            />
+
             {/* Field */}
             <button
               type="button"
@@ -493,13 +517,27 @@ function Index() {
                 assignment={assignment}
                 players={players}
                 mirror={mirror}
+                animate={animating}
+                animationKey={animateKey}
               />
             </button>
 
             {/* Action bar */}
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-6 gap-2">
               <Button onClick={callPlay} className="col-span-2" size="lg">
                 <Maximize2 className="h-4 w-4 mr-2" /> Call & Show
+              </Button>
+              <Button
+                onClick={() => {
+                  setAnimating(true);
+                  setAnimateKey((k) => k + 1);
+                  window.setTimeout(() => setAnimating(false), 3200);
+                }}
+                variant="secondary"
+                size="lg"
+                aria-label="Animate routes"
+              >
+                <PlayIcon className="h-4 w-4" />
               </Button>
               <Button
                 onClick={() => setMirror((v) => !v)}

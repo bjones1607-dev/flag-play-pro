@@ -2,7 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import type { Play, Player, PlayerAssignment } from "@/lib/types";
 import { FootballField } from "./FootballField";
 import { Button } from "@/components/ui/button";
-import { X, ChevronLeft, ChevronRight, Star, FlipHorizontal, Timer, TimerOff } from "lucide-react";
+import {
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  FlipHorizontal,
+  Timer,
+  TimerOff,
+  Play as PlayIcon,
+} from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -31,9 +40,17 @@ export function HuddleView({
 }: Props) {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [mirror, setMirror] = useState(false);
+  const [animating, setAnimating] = useState(false);
+  const [animateKey, setAnimateKey] = useState(0);
   const [clockOn, setClockOn] = useState(false);
   const [clock, setClock] = useState(PASS_CLOCK_SECONDS);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const triggerAnimate = () => {
+    setAnimating(true);
+    setAnimateKey((k) => k + 1);
+    window.setTimeout(() => setAnimating(false), 3200);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -42,6 +59,7 @@ export function HuddleView({
       if (e.key === "ArrowLeft") onIndex((index - 1 + plays.length) % plays.length);
       if (e.key === "ArrowRight") onIndex((index + 1) % plays.length);
       if (e.key === "m") setMirror((v) => !v);
+      if (e.key === " " || e.key === "a") triggerAnimate();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -155,6 +173,8 @@ export function HuddleView({
             players={players}
             big
             mirror={mirror}
+            animate={animating}
+            animationKey={animateKey}
           />
         </div>
         {/* 7-sec pass clock overlay */}
@@ -200,6 +220,15 @@ export function HuddleView({
           >
             <ChevronLeft className="h-6 w-6 mr-1" />
             <span className="font-display text-lg">PREV</span>
+          </Button>
+          <Button
+            variant="secondary"
+            size="lg"
+            className="h-14 px-3"
+            onClick={triggerAnimate}
+            aria-label="Animate routes"
+          >
+            <PlayIcon className="h-6 w-6" />
           </Button>
           <Button
             variant={clockOn ? "destructive" : "secondary"}

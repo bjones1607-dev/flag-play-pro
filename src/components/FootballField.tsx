@@ -1,6 +1,147 @@
-import { forwardRef, useImperativeHandle, useRef } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import type { Play, Player, PlayerAssignment, RouteType } from "@/lib/types";
 import { defensePositions } from "@/lib/plays";
+
+function useAnimationProgress(active: boolean, durationMs: number, key?: number | string) {
+  const [t, setT] = useState(0);
+  useEffect(() => {
+    if (!active) {
+      setT(0);
+      return;
+    }
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(1, elapsed / durationMs);
+      setT(progress);
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [active, durationMs, key]);
+  return t;
+}
+
+interface AnimatedRouteProps {
+  d: string;
+  color: string;
+  isRunner: boolean;
+  t: number;
+  enabled: boolean;
+  start: [number, number];
+  dotR: number;
+  isCenter: boolean;
+  label: string;
+  labelSize: number;
+  showLabels: boolean;
+  arrowMarker: string;
+  routeLabel: string;
+  routeLabelEnd: [number, number];
+  routeLabelSize: number;
+}
+
+function AnimatedRoute({
+  d,
+  color,
+  isRunner,
+  t,
+  enabled,
+  start,
+  dotR,
+  isCenter,
+  label,
+  labelSize,
+  showLabels,
+  arrowMarker,
+  routeLabel,
+  routeLabelEnd,
+  routeLabelSize,
+}: AnimatedRouteProps) {
+  const pathRef = useRef<SVGPathElement>(null);
+  const [len, setLen] = useState(0);
+  useLayoutEffect(() => {
+    if (pathRef.current) {
+      setLen(pathRef.current.getTotalLength());
+    }
+  }, [d]);
+
+  // Compute the moving dot position when animating.
+  let dotX = start[0];
+  let dotY = start[1];
+  if (enabled && len > 0 && pathRef.current) {
+    const p = pathRef.current.getPointAtLength(t * len);
+    dotX = p.x;
+    dotY = p.y;
+  }
+
+  const labelY = routeLabelEnd[1] < 8 ? routeLabelEnd[1] + 4 : routeLabelEnd[1] - 1.8;
+
+  return (
+    <>
+      <path
+        ref={pathRef}
+        d={d}
+        stroke={isRunner ? "var(--primary)" : color}
+        strokeWidth={isRunner ? 1.2 : 0.8}
+        strokeDasharray={enabled && len > 0 ? `${len}` : isRunner ? "2 0.8" : undefined}
+        strokeDashoffset={enabled && len > 0 ? len * (1 - t) : undefined}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        markerEnd={enabled && t < 0.95 ? undefined : arrowMarker}
+        style={{ transition: enabled ? "none" : undefined }}
+      />
+      <circle
+        cx={dotX}
+        cy={dotY}
+        r={dotR}
+        fill={isCenter ? "var(--chalk)" : isRunner ? "var(--primary)" : color}
+        stroke="var(--field-deep)"
+        strokeWidth={isCenter ? 0.6 : 0.3}
+      />
+      {showLabels && (
+        <text
+          x={dotX}
+          y={dotY + 1}
+          textAnchor="middle"
+          fontSize={labelSize}
+          fill="#0a1a0e"
+          fontWeight="800"
+          style={{ pointerEvents: "none" }}
+        >
+          {label}
+        </text>
+      )}
+      {showLabels && !enabled && (
+        <text
+          x={routeLabelEnd[0]}
+          y={labelY}
+          textAnchor="middle"
+          fontSize={routeLabelSize}
+          fill={isRunner ? "var(--primary)" : color}
+          fontWeight="800"
+          style={{
+            paintOrder: "stroke",
+            stroke: "rgba(0,0,0,0.6)",
+            strokeWidth: 0.5,
+            pointerEvents: "none",
+          }}
+          fontFamily="var(--font-display)"
+        >
+          {routeLabel}
+        </text>
+      )}
+    </>
+  );
+}
 
 const ROUTE_COLORS = [
   "var(--route-1)",
@@ -24,6 +165,9 @@ interface Props {
   showLabels?: boolean;
   big?: boolean; // larger labels/markers for huddle mode
   mirror?: boolean; // flip play left/right
+  animate?: boolean; // animate routes from start to finish
+  animationKey?: number | string; // change to restart animation
+  animationMs?: number; // duration in ms
   onReceiverMove?: (id: string, x: number, y: number) => void;
   onQbMove?: (x: number, y: number) => void;
 }
@@ -167,12 +311,16 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
     showLabels = true,
     big = false,
     mirror = false,
+    animate = false,
+    animationKey,
+    animationMs = 3000,
     onReceiverMove,
     onQbMove,
   },
   ref,
 ) {
   const play = mirror ? mirrorPlay(rawPlay) : rawPlay;
+  const animT = useAnimationProgress(animate, animationMs, animationKey);
   const svgRef = useRef<SVGSVGElement>(null);
   const draggingRef = useRef<string | null>(null);
   const draggable = !!onReceiverMove || !!onQbMove;
@@ -530,81 +678,32 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
         const pts = routeSvgPoints(r.route, r.x, r.y, r.side ?? "right");
         const d = pts.map((p, idx) => `${idx === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
         const end = pts[pts.length - 1];
-        const labelY = end[1] < 8 ? end[1] + 4 : end[1] - 1.8;
+        const arrowMarker = isRunner ? "url(#run-arrow)" : `url(#arrow-${i % 5})`;
+        const label = playerLabel(r.id) || (r.isCenter ? "C" : String(i + 1));
 
         return (
-          <g key={r.id}>
-            <path
+          <g
+            key={r.id}
+            style={{ cursor: draggable ? "grab" : "default" }}
+            onPointerDown={draggable ? startDrag(r.id) : undefined}
+          >
+            <AnimatedRoute
               d={d}
-              stroke={isRunner ? "var(--primary)" : color}
-              strokeWidth={isRunner ? 1.2 : 0.8}
-              strokeDasharray={isRunner ? "2 0.8" : undefined}
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              markerEnd={isRunner ? "url(#run-arrow)" : `url(#arrow-${i % 5})`}
+              color={color}
+              isRunner={isRunner}
+              t={animT}
+              enabled={animate}
+              start={start}
+              dotR={dotR}
+              isCenter={!!r.isCenter}
+              label={label}
+              labelSize={labelSize}
+              showLabels={showLabels}
+              arrowMarker={arrowMarker}
+              routeLabel={r.route.toUpperCase()}
+              routeLabelEnd={[end[0], end[1]]}
+              routeLabelSize={isRunner ? (big ? 3.2 : 2.6) : big ? 2.8 : 2.2}
             />
-            <circle
-              cx={start[0]}
-              cy={start[1]}
-              r={dotR}
-              fill={r.isCenter ? "var(--chalk)" : isRunner ? "var(--primary)" : color}
-              stroke="var(--field-deep)"
-              strokeWidth={r.isCenter ? 0.6 : 0.3}
-              style={{ cursor: draggable ? "grab" : "default" }}
-              onPointerDown={startDrag(r.id)}
-            />
-            {showLabels && (
-              <text
-                x={start[0]}
-                y={start[1] + 1}
-                textAnchor="middle"
-                fontSize={labelSize}
-                fill="#0a1a0e"
-                fontWeight="800"
-                style={{ pointerEvents: "none" }}
-              >
-                {playerLabel(r.id) || (r.isCenter ? "C" : i + 1)}
-              </text>
-            )}
-            {showLabels && !isRunner && (
-              <text
-                x={end[0]}
-                y={labelY}
-                textAnchor="middle"
-                fontSize={big ? 2.8 : 2.2}
-                fill={color}
-                fontWeight="800"
-                style={{
-                  paintOrder: "stroke",
-                  stroke: "rgba(0,0,0,0.6)",
-                  strokeWidth: 0.5,
-                  pointerEvents: "none",
-                }}
-                fontFamily="var(--font-display)"
-              >
-                {r.route.toUpperCase()}
-              </text>
-            )}
-            {showLabels && isRunner && (
-              <text
-                x={end[0]}
-                y={labelY}
-                textAnchor="middle"
-                fontSize={big ? 3.2 : 2.6}
-                fill="var(--primary)"
-                fontWeight="800"
-                style={{
-                  paintOrder: "stroke",
-                  stroke: "rgba(0,0,0,0.7)",
-                  strokeWidth: 0.6,
-                  pointerEvents: "none",
-                }}
-                fontFamily="var(--font-display)"
-              >
-                {r.route.toUpperCase()}
-              </text>
-            )}
           </g>
         );
       })}

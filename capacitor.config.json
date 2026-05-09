@@ -1,0 +1,15 @@
+{
+  "appId": "com.flagsixsix.coach",
+  "appName": "FlagBook 6v6",
+  "webDir": "dist/client",
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "automatic",
+    "backgroundColor": "#1a2820"
+  },
+  "android": {
+    "backgroundColor": "#1a2820"
+  }
+}
