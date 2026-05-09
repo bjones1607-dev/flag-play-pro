@@ -10,7 +10,7 @@ import { PlayBuilder } from "@/components/PlayBuilder";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shuffle, Users, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Shuffle, Users, Plus, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
