@@ -2,13 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DefenseType, Play, PlayTag } from "@/lib/types";
 import { PRESET_PLAYS } from "@/lib/plays";
-import { saveCustomPlays } from "@/lib/storage";
+import { recordPlayCall, saveCustomPlays } from "@/lib/storage";
 import { ALL_TAGS, TAG_LABELS } from "@/lib/routes";
 import { FootballField, type FootballFieldHandle } from "@/components/FootballField";
 import { RosterPanel } from "@/components/RosterPanel";
 import { AssignmentPanel } from "@/components/AssignmentPanel";
 import { PlayBuilder } from "@/components/PlayBuilder";
 import { HuddleView } from "@/components/HuddleView";
+import { GameTracker } from "@/components/GameTracker";
+import { PlayHistoryStrip } from "@/components/PlayHistoryStrip";
+import { PracticePanel } from "@/components/PracticePanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -27,9 +30,19 @@ import {
   Copy,
   Share2,
   ImageDown,
+  FlipHorizontal,
+  ClipboardList,
+  AlertTriangle,
+  Calendar,
 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
-import { useAssignment, useCustomPlays, useFavorites, usePlayers } from "@/hooks/use-storage";
+import {
+  useAssignment,
+  useCustomPlays,
+  useFavorites,
+  useGame,
+  usePlayers,
+} from "@/hooks/use-storage";
 import { decodePlayFromHash, downloadDataUrl, encodePlayToUrl, svgToPngDataUrl } from "@/lib/share";
 import { toast } from "sonner";
 
@@ -61,6 +74,11 @@ function Index() {
   const [search, setSearch] = useState("");
   const [activeTags, setActiveTags] = useState<Set<PlayTag>>(new Set());
   const [favOnly, setFavOnly] = useState(false);
+  const [mirror, setMirror] = useState(false);
+  const [gameOpen, setGameOpen] = useState(false);
+  const [practiceOpen, setPracticeOpen] = useState(false);
+
+  const { game, set: setGame } = useGame();
 
   const fieldRef = useRef<FootballFieldHandle>(null);
 
@@ -111,6 +129,7 @@ function Index() {
     if (filtered.length < 2) return;
     const ni = (idx + dir + filtered.length) % filtered.length;
     setSelectedId(filtered[ni].id);
+    setMirror(false);
   };
 
   const shuffle = () => {
@@ -120,7 +139,25 @@ function Index() {
       next = filtered[Math.floor(Math.random() * filtered.length)].id;
     }
     setSelectedId(next!);
+    setMirror(false);
   };
+
+  // Record a play call (when coach opens huddle / takes the play to the field)
+  const callPlay = () => {
+    if (!current) return;
+    recordPlayCall({ id: current.id, name: current.name, t: Date.now() });
+    setHuddleOpen(true);
+  };
+
+  // No-run-zone alert: if game state is in NRZ and current play is tagged "run"
+  const runInNRZ =
+    !!current && game.noRunZone && (current.tags?.includes("run") || current.playType === "run");
+
+  // Recently called warning: same play called in last 3
+  const recentlyCalled = useMemo(() => {
+    if (!current) return false;
+    return game.history.slice(0, 3).some((c) => c.id === current.id);
+  }, [game.history, current]);
 
   // Keyboard nav: arrow keys to cycle, "f" to favorite, "s" to shuffle, "h" to huddle
   useEffect(() => {
@@ -217,10 +254,40 @@ function Index() {
           <div>
             <h1 className="font-display text-2xl leading-none text-primary">FLAG · 6V6</h1>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Play Designer
+              Coach's Playbook
             </p>
           </div>
           <div className="flex gap-1">
+            <Sheet open={practiceOpen} onOpenChange={setPracticeOpen}>
+              <SheetTrigger asChild>
+                <Button variant="secondary" size="icon" aria-label="Practice plans">
+                  <Calendar className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[92vw] sm:w-[480px] overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle className="font-display text-2xl">Practice Plans</SheetTitle>
+                </SheetHeader>
+                <div className="mt-6">
+                  <PracticePanel allPlays={allPlays} />
+                </div>
+              </SheetContent>
+            </Sheet>
+            <Sheet open={gameOpen} onOpenChange={setGameOpen}>
+              <SheetTrigger asChild>
+                <Button variant="secondary" size="icon" aria-label="Game tracker">
+                  <ClipboardList className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[90vw] sm:w-[400px] overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle className="font-display text-2xl">Game Day</SheetTitle>
+                </SheetHeader>
+                <div className="mt-6">
+                  <GameTracker game={game} onChange={setGame} />
+                </div>
+              </SheetContent>
+            </Sheet>
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="secondary" className="gap-1.5 px-3">
@@ -266,6 +333,37 @@ function Index() {
               </SheetContent>
             </Sheet>
           </div>
+        </div>
+
+        {/* Mini scoreboard / down summary */}
+        <div className="px-4 pb-2">
+          <button
+            onClick={() => setGameOpen(true)}
+            className="w-full flex items-center justify-between text-[11px] font-display tracking-wider bg-secondary/60 rounded-md px-3 py-1.5 text-muted-foreground"
+          >
+            <span>
+              <span className="text-primary">
+                {game.homeName} {game.homeScore}
+              </span>
+              {" · "}
+              <span>
+                {game.awayName} {game.awayScore}
+              </span>
+            </span>
+            <span>
+              {game.down}
+              {game.down === 1
+                ? "ST"
+                : game.down === 2
+                  ? "ND"
+                  : game.down === 3
+                    ? "RD"
+                    : "TH"} & {game.yardsToFirst}
+              {" · "}
+              BALL ON {game.ballOn}
+              {game.noRunZone && <span className="ml-2 text-destructive">⚠ NO-RUN</span>}
+            </span>
+          </button>
         </div>
 
         {/* Defense toggle */}
@@ -323,13 +421,19 @@ function Index() {
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <div className="flex-1 text-center min-w-0">
-                <div className="font-display text-3xl text-primary leading-none truncate">
-                  {current.name.toUpperCase()}
+                <div className="flex items-center justify-center gap-2">
+                  <span className="font-display text-2xl text-muted-foreground leading-none">
+                    #{idx + 1}
+                  </span>
+                  <span className="font-display text-3xl text-primary leading-none truncate">
+                    {current.name.toUpperCase()}
+                  </span>
                 </div>
                 <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1 truncate">
                   {current.formation} · {idx + 1}/{filtered.length}
                   {current.playType === "run" && " · RUN"}
                   {current.custom && " · CUSTOM"}
+                  {mirror && " · MIRRORED"}
                 </div>
               </div>
               <Button
@@ -347,10 +451,39 @@ function Index() {
               </Button>
             </div>
 
+            {/* Recent-call warning */}
+            {(runInNRZ || recentlyCalled) && (
+              <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-lg p-2.5">
+                <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                <div className="text-xs leading-snug">
+                  {runInNRZ && (
+                    <div className="text-destructive font-medium">
+                      No-run zone — run plays not allowed at this yard line.
+                    </div>
+                  )}
+                  {recentlyCalled && (
+                    <div className="text-muted-foreground">
+                      You just called this play — consider mixing it up.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Play history */}
+            {game.history.length > 0 && (
+              <PlayHistoryStrip
+                history={game.history}
+                onPick={(id) => {
+                  if (filtered.find((p) => p.id === id)) setSelectedId(id);
+                }}
+              />
+            )}
+
             {/* Field */}
             <button
               type="button"
-              onClick={() => setHuddleOpen(true)}
+              onClick={callPlay}
               className="block w-full text-left rounded-xl"
               aria-label="Open huddle view"
             >
@@ -359,13 +492,22 @@ function Index() {
                 play={current}
                 assignment={assignment}
                 players={players}
+                mirror={mirror}
               />
             </button>
 
             {/* Action bar */}
-            <div className="grid grid-cols-4 gap-2">
-              <Button onClick={() => setHuddleOpen(true)} className="col-span-2" size="lg">
-                <Maximize2 className="h-4 w-4 mr-2" /> Show Huddle
+            <div className="grid grid-cols-5 gap-2">
+              <Button onClick={callPlay} className="col-span-2" size="lg">
+                <Maximize2 className="h-4 w-4 mr-2" /> Call & Show
+              </Button>
+              <Button
+                onClick={() => setMirror((v) => !v)}
+                variant={mirror ? "default" : "secondary"}
+                size="lg"
+                aria-label="Mirror"
+              >
+                <FlipHorizontal className="h-4 w-4" />
               </Button>
               <Button onClick={shuffle} variant="secondary" size="lg" aria-label="Shuffle">
                 <Shuffle className="h-4 w-4" />

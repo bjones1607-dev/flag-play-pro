@@ -4,10 +4,14 @@ import {
   loadAssignment,
   loadCustomPlays,
   loadFavorites,
+  loadGame,
   loadPlayers,
+  loadPractices,
   saveFavorites,
+  saveGame,
+  savePractices,
 } from "@/lib/storage";
-import type { Play, Player, PlayerAssignment } from "@/lib/types";
+import type { GameState, Play, Player, PlayerAssignment, PracticePlan } from "@/lib/types";
 
 function subscribe(events: string[], cb: () => void) {
   events.forEach((e) => window.addEventListener(e, cb));
@@ -64,4 +68,48 @@ export function useFavorites(): {
     setIds(next);
   };
   return { ids, has: (id) => ids.has(id), toggle };
+}
+
+export function useGame(): {
+  game: GameState;
+  set: (next: GameState) => void;
+  patch: (p: Partial<GameState>) => void;
+} {
+  const [game, setGame] = useState<GameState>({
+    homeName: "US",
+    awayName: "OPP",
+    homeScore: 0,
+    awayScore: 0,
+    down: 1,
+    yardsToFirst: 20,
+    ballOn: 50,
+    noRunZone: false,
+    history: [],
+  });
+  useEffect(() => {
+    setGame(loadGame());
+    return subscribe([EVENTS.GAME], () => setGame(loadGame()));
+  }, []);
+  const set = (next: GameState) => {
+    saveGame(next);
+    setGame(next);
+  };
+  const patch = (p: Partial<GameState>) => set({ ...game, ...p });
+  return { game, set, patch };
+}
+
+export function usePractices(): {
+  plans: PracticePlan[];
+  set: (next: PracticePlan[]) => void;
+} {
+  const [plans, setPlans] = useState<PracticePlan[]>([]);
+  useEffect(() => {
+    setPlans(loadPractices());
+    return subscribe([EVENTS.PRACTICE], () => setPlans(loadPractices()));
+  }, []);
+  const set = (next: PracticePlan[]) => {
+    savePractices(next);
+    setPlans(next);
+  };
+  return { plans, set };
 }

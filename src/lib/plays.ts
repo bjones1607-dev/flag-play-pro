@@ -15,6 +15,11 @@ const POS = {
   backfieldRight: { x: 62, y: 14 },
 };
 
+// 6v6 UTL/youth flag note: the center is an eligible receiver. They snap, then
+// release on a delay route. Most plays here have the center running "delay"
+// (release after a 1-count, then a short out/hitch). For run plays, the center
+// shields the rusher.
+
 export const PRESET_PLAYS: Play[] = [
   // ===== ZONE PASS =====
   {
@@ -29,7 +34,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.left, route: "post", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "post", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
@@ -45,7 +50,7 @@ export const PRESET_PLAYS: Play[] = [
     tags: ["short"],
     receivers: [
       { id: "r1", ...POS.left, route: "hitch", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r3", x: 60, y: 4, route: "slant", side: "right" },
       { id: "r4", x: 68, y: 4, route: "slant", side: "right" },
       { id: "r5", x: 76, y: 4, route: "slant", side: "right" },
@@ -62,7 +67,7 @@ export const PRESET_PLAYS: Play[] = [
     tags: ["short", "third-long"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "dig", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r3", ...POS.slotRight, route: "corner", side: "right" },
       { id: "r4", ...POS.right, route: "out", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
@@ -74,13 +79,13 @@ export const PRESET_PLAYS: Play[] = [
     defense: "zone",
     qb: QB,
     formation: "Spread",
-    purpose: "Four go routes stress every deep zone.",
+    purpose: "Four verticals + center seam stress every deep zone.",
     keyRead: "Find the seam between safeties.",
     tags: ["deep"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "go", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "seam", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "go", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
@@ -97,7 +102,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "curl", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "flat", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "flat", side: "right" },
       { id: "r5", ...POS.farRight, route: "curl", side: "right" },
     ],
@@ -114,7 +119,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.left, route: "hitch", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "corner", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "corner", side: "right" },
       { id: "r5", ...POS.right, route: "hitch", side: "right" },
     ],
@@ -126,14 +131,14 @@ export const PRESET_PLAYS: Play[] = [
     qb: QB,
     formation: "Empty",
     purpose: "Quick lateral release with blockers.",
-    keyRead: "Throw immediately to back; let blockers work.",
+    keyRead: "Throw immediately to the bubble; let blockers work.",
     tags: ["short", "screen"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.left, route: "block", side: "left" },
-      { id: "r3", ...POS.center, route: "screen", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "block", side: "right" },
-      { id: "r5", ...POS.farRight, route: "go", side: "right" },
+      { id: "r5", ...POS.farRight, route: "screen", side: "right" },
     ],
   },
   {
@@ -147,7 +152,7 @@ export const PRESET_PLAYS: Play[] = [
     tags: ["short"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r3", ...POS.slotRight, route: "out", side: "right" },
       { id: "r4", ...POS.right, route: "curl", side: "right" },
       { id: "r5", ...POS.farRight, route: "flat", side: "right" },
@@ -165,7 +170,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "in", side: "left" },
       { id: "r2", ...POS.left, route: "dig", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "hitch", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
@@ -181,7 +186,7 @@ export const PRESET_PLAYS: Play[] = [
     tags: ["short"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r3", ...POS.slotRight, route: "corner", side: "right" },
       { id: "r4", ...POS.right, route: "curl", side: "right" },
       { id: "r5", ...POS.farRight, route: "flat", side: "right" },
@@ -200,7 +205,7 @@ export const PRESET_PLAYS: Play[] = [
       { id: "r1", ...POS.farLeft, route: "out", side: "left" },
       { id: "r2", ...POS.left, route: "curl", side: "left" },
       { id: "r3", ...POS.slotLeft, route: "flat", side: "left" },
-      { id: "r4", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r4", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r5", ...POS.farRight, route: "post", side: "right" },
     ],
   },
@@ -216,9 +221,98 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "drag", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "dig", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "go", side: "right" },
       { id: "r5", ...POS.farRight, route: "curl", side: "right" },
+    ],
+  },
+  {
+    id: "spacing",
+    name: "Spacing",
+    defense: "zone",
+    qb: QB,
+    formation: "Empty",
+    purpose: "Five hitches at different depths — beats any soft zone.",
+    keyRead: "Find the open window. First read inside-out.",
+    tags: ["short", "third-long"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "hitch", side: "left" },
+      { id: "r2", ...POS.left, route: "hitch", side: "left" },
+      { id: "r3", ...POS.center, route: "hitch", side: "right", isCenter: true },
+      { id: "r4", ...POS.right, route: "hitch", side: "right" },
+      { id: "r5", ...POS.farRight, route: "hitch", side: "right" },
+    ],
+  },
+  {
+    id: "hank",
+    name: "Hank",
+    defense: "zone",
+    qb: QB,
+    formation: "Doubles",
+    purpose: "Quick hitches outside, curls inside — easy completions.",
+    keyRead: "Inside curls vs. zone, outside hitches vs. tight man.",
+    tags: ["short"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "hitch", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "curl", side: "left" },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "curl", side: "right" },
+      { id: "r5", ...POS.farRight, route: "hitch", side: "right" },
+    ],
+  },
+
+  // ===== CENTER-FOCUSED =====
+  {
+    id: "center-sneak",
+    name: "Center Sneak",
+    defense: "zone",
+    qb: QB,
+    formation: "Trips Right",
+    purpose: "Defenders forget the center. Pop pass over the line for easy yards.",
+    keyRead: "Snap, count one, throw to center popping into the seam.",
+    notes: "All other receivers clear deep to pull defenders away.",
+    tags: ["short", "trick", "center"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "go", side: "left" },
+      { id: "r2", ...POS.center, route: "pop", side: "right", isCenter: true },
+      { id: "r3", ...POS.slotRight, route: "go", side: "right" },
+      { id: "r4", ...POS.right, route: "go", side: "right" },
+      { id: "r5", ...POS.farRight, route: "go", side: "right" },
+    ],
+  },
+  {
+    id: "center-screen",
+    name: "Center Screen",
+    defense: "man",
+    qb: QB,
+    formation: "Empty",
+    purpose: "Center hikes, drifts back, takes a quick screen with two blockers.",
+    keyRead: "Sell pass for one beat, then dump it to the center.",
+    notes: "Backside receivers shield rather than run routes.",
+    tags: ["short", "screen", "center", "trick"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "go", side: "left" },
+      { id: "r2", ...POS.left, route: "block", side: "left" },
+      { id: "r3", ...POS.center, route: "screen", side: "right", isCenter: true },
+      { id: "r4", ...POS.right, route: "block", side: "right" },
+      { id: "r5", ...POS.farRight, route: "go", side: "right" },
+    ],
+  },
+  {
+    id: "center-seam",
+    name: "Center Seam",
+    defense: "man",
+    qb: QB,
+    formation: "Doubles",
+    purpose: "Center releases up the gut after a count — wide open vs. man.",
+    keyRead: "If LB chases a receiver, the seam is yours.",
+    tags: ["deep", "center", "trick"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "out", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "corner", side: "left" },
+      { id: "r3", ...POS.center, route: "seam", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "corner", side: "right" },
+      { id: "r5", ...POS.farRight, route: "out", side: "right" },
     ],
   },
 
@@ -235,7 +329,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "cross", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "go", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "cross", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
@@ -252,7 +346,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.left, route: "dig", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "post", side: "right" },
       { id: "r5", ...POS.farRight, route: "out", side: "right" },
     ],
@@ -263,13 +357,13 @@ export const PRESET_PLAYS: Play[] = [
     defense: "man",
     qb: QB,
     formation: "Spread",
-    purpose: "Two shallow crossers create a natural pick.",
+    purpose: "Two shallow crossers create a natural rub.",
     keyRead: "Throw to the receiver running away from coverage.",
     tags: ["short"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "cross", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "corner", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "corner", side: "right" },
       { id: "r5", ...POS.farRight, route: "cross", side: "right" },
     ],
@@ -286,7 +380,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.left, route: "slant", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "go", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "go", side: "right" },
       { id: "r5", ...POS.right, route: "slant", side: "right" },
     ],
@@ -302,7 +396,7 @@ export const PRESET_PLAYS: Play[] = [
     tags: ["deep"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "post", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r3", ...POS.slotRight, route: "in", side: "right" },
       { id: "r4", ...POS.right, route: "go", side: "right" },
       { id: "r5", ...POS.backfieldRight, route: "wheel", side: "right" },
@@ -320,7 +414,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "dig", side: "left" },
       { id: "r2", ...POS.left, route: "drag", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "go", side: "right" },
       { id: "r5", ...POS.farRight, route: "corner", side: "right" },
     ],
@@ -337,7 +431,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "drag", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "drag", side: "right" },
       { id: "r5", ...POS.farRight, route: "out", side: "right" },
     ],
@@ -348,12 +442,12 @@ export const PRESET_PLAYS: Play[] = [
     defense: "man",
     qb: QB,
     formation: "Bunch Right",
-    purpose: "Bunch creates natural pick on slants.",
+    purpose: "Bunch creates natural rub on slants.",
     keyRead: "Throw to receiver coming free from rub.",
     tags: ["short"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r3", x: 60, y: 4, route: "slant", side: "right" },
       { id: "r4", x: 68, y: 4, route: "out", side: "right" },
       { id: "r5", x: 76, y: 4, route: "slant", side: "right" },
@@ -371,7 +465,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "post", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "out", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "in", side: "right" },
       { id: "r5", ...POS.farRight, route: "post", side: "right" },
     ],
@@ -388,7 +482,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "corner", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "seam", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "corner", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
@@ -404,7 +498,7 @@ export const PRESET_PLAYS: Play[] = [
     tags: ["deep", "trick"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "in", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r3", ...POS.slotRight, route: "go", side: "right" },
       { id: "r4", ...POS.right, route: "go", side: "right" },
       { id: "r5", ...POS.farRight, route: "out", side: "right" },
@@ -412,7 +506,7 @@ export const PRESET_PLAYS: Play[] = [
   },
   {
     id: "fade-flat",
-    name: "Fade-Flat (Goal Line)",
+    name: "Fade-Flat",
     defense: "man",
     qb: QB,
     formation: "Doubles Tight",
@@ -422,9 +516,77 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", x: 22, y: 4, route: "go", side: "left" },
       { id: "r2", x: 36, y: 4, route: "flat", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", x: 64, y: 4, route: "flat", side: "right" },
       { id: "r5", x: 78, y: 4, route: "go", side: "right" },
+    ],
+  },
+  {
+    id: "slot-fade",
+    name: "Slot Fade",
+    defense: "man",
+    qb: QB,
+    formation: "Stack Right",
+    purpose: "Stack release lets the slot win with a fade up the sideline.",
+    keyRead: "Drop it in the bucket on the slot's outside shoulder.",
+    tags: ["redzone", "goalline", "deep"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "out", side: "left" },
+      { id: "r2", ...POS.center, route: "delay", side: "right", isCenter: true },
+      { id: "r3", x: 70, y: 4, route: "slant", side: "right" },
+      { id: "r4", x: 70, y: 7, route: "go", side: "right" },
+      { id: "r5", ...POS.farRight, route: "post", side: "right" },
+    ],
+  },
+  {
+    id: "y-cross",
+    name: "Y-Cross",
+    defense: "zone",
+    qb: QB,
+    formation: "Doubles",
+    purpose: "Air-raid staple: deep cross from the slot, flood underneath.",
+    keyRead: "If MLB sinks, hit drag. If he widens, throw the cross deep.",
+    tags: ["deep", "third-long"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "go", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "cross", side: "left" },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "drag", side: "right" },
+      { id: "r5", ...POS.farRight, route: "curl", side: "right" },
+    ],
+  },
+  {
+    id: "all-go",
+    name: "All Go",
+    defense: "man",
+    qb: QB,
+    formation: "Spread",
+    purpose: "Take a shot — everyone deep, isolate one-on-ones.",
+    keyRead: "Pick the best matchup pre-snap, throw to that side.",
+    tags: ["deep", "trick"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "go", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "go", side: "left" },
+      { id: "r3", ...POS.center, route: "seam", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "go", side: "right" },
+      { id: "r5", ...POS.farRight, route: "go", side: "right" },
+    ],
+  },
+  {
+    id: "stack-mesh",
+    name: "Stack Mesh",
+    defense: "man",
+    qb: QB,
+    formation: "Stack Right",
+    purpose: "Stack release sets up natural rubs on the mesh.",
+    keyRead: "Throw the first crosser who breaks free.",
+    tags: ["short"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "drag", side: "left" },
+      { id: "r2", ...POS.center, route: "delay", side: "right", isCenter: true },
+      { id: "r3", x: 70, y: 4, route: "drag", side: "left" },
+      { id: "r4", x: 70, y: 7, route: "out", side: "right" },
+      { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
   },
 
@@ -541,9 +703,46 @@ export const PRESET_PLAYS: Play[] = [
       { id: "r5", ...POS.backfieldRight, route: "sweep", side: "left", isRunner: true },
     ],
   },
+  {
+    id: "power-right",
+    name: "Power Right",
+    defense: "man",
+    qb: QB,
+    formation: "I-Form",
+    playType: "run",
+    purpose: "Lead RB through the right C-gap behind a wall of shielders.",
+    keyRead: "Read the lead blocker; cut off his outside hip.",
+    tags: ["run", "short", "goalline"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "go", side: "left" },
+      { id: "r2", ...POS.right, route: "block", side: "right" },
+      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r4", ...POS.farRight, route: "block", side: "right" },
+      { id: "r5", ...POS.backfield, route: "dive", side: "right", isRunner: true },
+    ],
+  },
+  {
+    id: "qb-naked-bootleg",
+    name: "QB Naked Bootleg",
+    defense: "man",
+    qb: QB,
+    qbAction: "keep-left",
+    formation: "Strong Right",
+    playType: "run",
+    purpose: "Fake handoff right; QB rolls naked left and reads run/pass.",
+    keyRead: "Get to the edge; throw drag if defender comes, run if not.",
+    tags: ["run", "trick", "third-long"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "drag", side: "left" },
+      { id: "r2", ...POS.left, route: "flat", side: "left" },
+      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r4", ...POS.right, route: "block", side: "right" },
+      { id: "r5", ...POS.backfield, route: "block", side: "right" },
+    ],
+  },
 ];
 
-// 6 defenders for both man (3-2-1 / mirror) and zone (3-3 zone) — 6v6 reality.
+// 6 defenders for both man (mirror with deep safety) and zone (3-3) — 6v6 reality.
 export function defensePositions(d: "zone" | "man") {
   if (d === "zone") {
     // 3-3 zone: 3 underneath flat/curl, 3 deep

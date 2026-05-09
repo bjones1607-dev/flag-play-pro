@@ -1,4 +1,4 @@
-import type { RouteType, PassRoute, RunRoute, PlayTag } from "./types";
+import type { RouteType, PassRoute, RunRoute, PlayTag, PlayerPosition } from "./types";
 
 export const ROUTE_LABELS: Record<RouteType, string> = {
   go: "Go",
@@ -13,11 +13,13 @@ export const ROUTE_LABELS: Record<RouteType, string> = {
   flat: "Flat",
   screen: "Screen",
   cross: "Cross",
-  block: "Block",
+  block: "Block / Shield",
   drag: "Drag",
   delay: "Delay",
   swing: "Swing",
   wheel: "Wheel",
+  pop: "Pop Pass",
+  seam: "Seam",
   dive: "Dive",
   sweep: "Sweep",
   counter: "Counter",
@@ -40,6 +42,8 @@ export const PASS_ROUTES: PassRoute[] = [
   "delay",
   "swing",
   "wheel",
+  "pop",
+  "seam",
   "block",
 ];
 
@@ -56,6 +60,8 @@ export const TAG_LABELS: Record<PlayTag, string> = {
   trick: "Trick",
   run: "Run",
   screen: "Screen",
+  "no-run-zone": "No-Run Zone OK",
+  center: "Center Play",
 };
 
 export const ALL_TAGS: PlayTag[] = [
@@ -67,4 +73,16 @@ export const ALL_TAGS: PlayTag[] = [
   "trick",
   "run",
   "screen",
+  "center",
 ];
+
+export const POSITION_LABELS: Record<PlayerPosition, string> = {
+  qb: "QB",
+  center: "Center",
+  wr: "WR",
+  rb: "RB",
+  rusher: "Rusher",
+  any: "Any",
+};
+
+export const ALL_POSITIONS: PlayerPosition[] = ["qb", "center", "wr", "rb", "rusher", "any"];

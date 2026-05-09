@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Play, Player, PlayerAssignment } from "@/lib/types";
 import { FootballField } from "./FootballField";
 import { Button } from "@/components/ui/button";
-import { X, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Star, FlipHorizontal, Timer, TimerOff } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -16,6 +16,8 @@ interface Props {
   onClose: () => void;
 }
 
+const PASS_CLOCK_SECONDS = 7;
+
 export function HuddleView({
   open,
   plays,
@@ -28,6 +30,9 @@ export function HuddleView({
   onClose,
 }: Props) {
   const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [mirror, setMirror] = useState(false);
+  const [clockOn, setClockOn] = useState(false);
+  const [clock, setClock] = useState(PASS_CLOCK_SECONDS);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,6 +41,7 @@ export function HuddleView({
       if (e.key === "Escape") onClose();
       if (e.key === "ArrowLeft") onIndex((index - 1 + plays.length) % plays.length);
       if (e.key === "ArrowRight") onIndex((index + 1) % plays.length);
+      if (e.key === "m") setMirror((v) => !v);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -48,6 +54,26 @@ export function HuddleView({
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  // Reset mirror + clock when play changes
+  useEffect(() => {
+    setClock(PASS_CLOCK_SECONDS);
+  }, [index]);
+
+  // Pass clock countdown
+  useEffect(() => {
+    if (!clockOn) return;
+    const id = window.setInterval(() => {
+      setClock((c) => {
+        if (c <= 0) {
+          window.clearInterval(id);
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [clockOn, index]);
 
   if (!open || plays.length === 0) return null;
   const play = plays[index];
@@ -64,6 +90,15 @@ export function HuddleView({
     setTouchStart(null);
   };
 
+  const startClock = () => {
+    setClock(PASS_CLOCK_SECONDS);
+    setClockOn(true);
+  };
+  const stopClock = () => {
+    setClockOn(false);
+    setClock(PASS_CLOCK_SECONDS);
+  };
+
   return (
     <div
       ref={containerRef}
@@ -72,18 +107,33 @@ export function HuddleView({
       onTouchEnd={onTouchEnd}
     >
       {/* Top bar */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border gap-2">
         <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close huddle">
           <X className="h-6 w-6" />
         </Button>
-        <div className="text-center flex-1 min-w-0 px-2">
-          <div className="font-display text-3xl text-primary leading-none truncate">
-            {play.name.toUpperCase()}
+        <div className="text-center flex-1 min-w-0 px-1">
+          <div className="flex items-center justify-center gap-2">
+            <span className="font-display text-2xl text-muted-foreground leading-none">
+              #{index + 1}
+            </span>
+            <span className="font-display text-3xl text-primary leading-none truncate">
+              {play.name.toUpperCase()}
+            </span>
           </div>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5 truncate">
-            {play.formation} · {play.defense.toUpperCase()} · {index + 1}/{plays.length}
+            {play.formation} · {play.defense.toUpperCase()}
+            {mirror && " · MIRRORED"}
           </div>
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setMirror((v) => !v)}
+          aria-label="Mirror play"
+          className={mirror ? "text-primary" : ""}
+        >
+          <FlipHorizontal className="h-6 w-6" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
@@ -97,10 +147,30 @@ export function HuddleView({
       </div>
 
       {/* Field — fills available space */}
-      <div className="flex-1 min-h-0 flex items-center justify-center p-2">
+      <div className="flex-1 min-h-0 flex items-center justify-center p-2 relative">
         <div className="w-full max-w-[640px] max-h-full">
-          <FootballField play={play} assignment={assignment} players={players} big />
+          <FootballField
+            play={play}
+            assignment={assignment}
+            players={players}
+            big
+            mirror={mirror}
+          />
         </div>
+        {/* 7-sec pass clock overlay */}
+        {clockOn && (
+          <div
+            className={`absolute top-3 right-3 font-display text-5xl px-4 py-2 rounded-lg border-2 ${
+              clock <= 2
+                ? "text-destructive border-destructive bg-destructive/10"
+                : "text-primary border-primary bg-primary/10"
+            }`}
+            onClick={stopClock}
+            role="button"
+          >
+            {clock}
+          </div>
+        )}
       </div>
 
       {/* Bottom: key read + nav */}
@@ -130,6 +200,15 @@ export function HuddleView({
           >
             <ChevronLeft className="h-6 w-6 mr-1" />
             <span className="font-display text-lg">PREV</span>
+          </Button>
+          <Button
+            variant={clockOn ? "destructive" : "secondary"}
+            size="lg"
+            className="h-14 px-3"
+            onClick={() => (clockOn ? stopClock() : startClock())}
+            aria-label="Toggle 7-second clock"
+          >
+            {clockOn ? <TimerOff className="h-6 w-6" /> : <Timer className="h-6 w-6" />}
           </Button>
           <Button
             size="lg"

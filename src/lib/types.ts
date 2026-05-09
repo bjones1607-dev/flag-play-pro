@@ -18,7 +18,9 @@ export type PassRoute =
   | "drag"
   | "delay"
   | "swing"
-  | "wheel";
+  | "wheel"
+  | "pop"
+  | "seam";
 
 // Run paths (used when a player is the ball carrier on a run play)
 export type RunRoute = "dive" | "sweep" | "counter";
@@ -37,7 +39,12 @@ export type PlayTag =
   | "third-long"
   | "trick"
   | "run"
-  | "screen";
+  | "screen"
+  | "no-run-zone"
+  | "center";
+
+// Roster positions for 6v6 flag football
+export type PlayerPosition = "qb" | "center" | "wr" | "rb" | "rusher" | "any";
 
 export interface ReceiverRoute {
   id: string;
@@ -76,9 +83,45 @@ export interface Player {
   id: string;
   name: string;
   number: string;
+  position?: PlayerPosition;
 }
 
 export interface PlayerAssignment {
   // receiverId -> playerId, "qb" -> playerId
   [slot: string]: string;
+}
+
+// Game-day tracker
+export interface GameState {
+  homeName: string;
+  awayName: string;
+  homeScore: number;
+  awayScore: number;
+  down: 1 | 2 | 3 | 4;
+  yardsToFirst: number; // 0 means crossed midfield / first
+  ballOn: number; // 0..100 yards (own goal to opponent)
+  noRunZone: boolean; // computed alert
+  history: PlayCall[];
+}
+
+export interface PlayCall {
+  id: string;
+  name: string;
+  t: number; // timestamp
+}
+
+// Practice planner
+export interface PracticeBlock {
+  id: string;
+  name: string;
+  minutes: number;
+  notes: string;
+  playIds: string[];
+}
+
+export interface PracticePlan {
+  id: string;
+  name: string;
+  date?: string; // YYYY-MM-DD
+  blocks: PracticeBlock[];
 }

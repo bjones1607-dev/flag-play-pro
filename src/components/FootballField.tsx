@@ -23,8 +23,29 @@ interface Props {
   players?: Player[];
   showLabels?: boolean;
   big?: boolean; // larger labels/markers for huddle mode
+  mirror?: boolean; // flip play left/right
   onReceiverMove?: (id: string, x: number, y: number) => void;
   onQbMove?: (x: number, y: number) => void;
+}
+
+function mirrorPlay(p: Play): Play {
+  const flipSide = (s?: "left" | "right") => (s === "left" ? "right" : s === "right" ? "left" : s);
+  return {
+    ...p,
+    qb: { ...p.qb, x: 100 - p.qb.x },
+    qbAction:
+      p.qbAction === "keep-left"
+        ? "keep-right"
+        : p.qbAction === "keep-right"
+          ? "keep-left"
+          : p.qbAction,
+    motion: p.motion ? { ...p.motion, toX: 100 - p.motion.toX } : undefined,
+    receivers: p.receivers.map((r) => ({
+      ...r,
+      x: 100 - r.x,
+      side: flipSide(r.side),
+    })),
+  };
 }
 
 export interface FootballFieldHandle {
@@ -99,8 +120,17 @@ function routeSvgPoints(
       move(lateral(-sgn * 32), downfield(4));
       break;
     case "delay":
-      move(0, 0); // pause indicator
-      move(lateral(sgn * 12), downfield(6));
+      // 1-count pause then a 5-yard out — eligible center release
+      move(0, downfield(2));
+      move(lateral(sgn * 14), downfield(4));
+      break;
+    case "pop":
+      // Quick pop pass: 4 yards straight up the seam
+      move(0, downfield(8));
+      break;
+    case "seam":
+      // Vertical up the middle seam
+      move(0, downfield(40));
       break;
     case "swing":
       move(lateral(sgn * 18), downfield(-2));
@@ -130,9 +160,19 @@ function routeSvgPoints(
 }
 
 export const FootballField = forwardRef<FootballFieldHandle, Props>(function FootballField(
-  { play, assignment = {}, players = [], showLabels = true, big = false, onReceiverMove, onQbMove },
+  {
+    play: rawPlay,
+    assignment = {},
+    players = [],
+    showLabels = true,
+    big = false,
+    mirror = false,
+    onReceiverMove,
+    onQbMove,
+  },
   ref,
 ) {
+  const play = mirror ? mirrorPlay(rawPlay) : rawPlay;
   const svgRef = useRef<SVGSVGElement>(null);
   const draggingRef = useRef<string | null>(null);
   const draggable = !!onReceiverMove || !!onQbMove;
