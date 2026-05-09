@@ -5,8 +5,8 @@ export type RouteType =
 
 export interface ReceiverRoute {
   id: string;
-  startX: number; // 0..100 (% of field width)
-  startY: number; // 0..100 (% of field length, 0 = LOS, 100 = endzone)
+  x: number;
+  y: number;
   route: RouteType;
   side?: "left" | "right";
 }
