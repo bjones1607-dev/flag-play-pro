@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import type { DefenseType, Play } from "@/lib/types";
 import { PRESET_PLAYS } from "@/lib/plays";
-import { loadCustomPlays } from "@/lib/storage";
+import { loadCustomPlays, saveCustomPlays } from "@/lib/storage";
 import { FootballField } from "@/components/FootballField";
 import { RosterPanel } from "@/components/RosterPanel";
 import { AssignmentPanel } from "@/components/AssignmentPanel";
