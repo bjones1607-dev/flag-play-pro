@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import type { Play, Player, PlayerAssignment } from "@/lib/types";
 import { defensePositions } from "@/lib/plays";
 import type { RouteType } from "@/lib/types";
@@ -19,6 +20,8 @@ interface Props {
   assignment?: PlayerAssignment;
   players?: Player[];
   showLabels?: boolean;
+  onReceiverMove?: (id: string, x: number, y: number) => void;
+  onQbMove?: (x: number, y: number) => void;
 }
 
 // Returns array of [x, y] points in SVG coords for the given route starting at (sx, sBehindLOS).
@@ -89,7 +92,13 @@ function routeSvgPoints(
   return pts;
 }
 
-export function FootballField({ play, assignment = {}, players = [], showLabels = true }: Props) {
+export function FootballField({
+  play, assignment = {}, players = [], showLabels = true, onReceiverMove, onQbMove,
+}: Props) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const draggingRef = useRef<string | null>(null);
+  const draggable = !!onReceiverMove || !!onQbMove;
+
   const playerLabel = (slotId: string) => {
     const pid = assignment[slotId];
     if (!pid) return "";
@@ -99,12 +108,52 @@ export function FootballField({ play, assignment = {}, players = [], showLabels 
 
   const defenders = defensePositions(play.defense);
 
+  const toSvgCoords = (clientX: number, clientY: number) => {
+    const svg = svgRef.current;
+    if (!svg) return { x: 0, y: 0 };
+    const pt = svg.createSVGPoint();
+    pt.x = clientX; pt.y = clientY;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const p = pt.matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  };
+
+  const startDrag = (id: string) => (e: React.PointerEvent) => {
+    if (!draggable) return;
+    e.preventDefault();
+    (e.target as Element).setPointerCapture(e.pointerId);
+    draggingRef.current = id;
+  };
+
+  const handleMove = (e: React.PointerEvent) => {
+    const id = draggingRef.current;
+    if (!id) return;
+    const { x, y } = toSvgCoords(e.clientX, e.clientY);
+    const cx = Math.max(4, Math.min(96, x));
+    if (id === "qb") {
+      // Convert svg y back to qb depth (svg y = LOS + qb.y*0.5)
+      const depth = Math.max(0, Math.min(28, (y - LOS) / 0.5));
+      onQbMove?.(cx, depth);
+    } else {
+      // Receiver svg y = LOS + r.y*0.4. Allow on/just behind LOS.
+      const depth = Math.max(0, Math.min(20, (y - LOS) / 0.4));
+      onReceiverMove?.(id, cx, depth);
+    }
+  };
+
+  const endDrag = () => { draggingRef.current = null; };
+
   return (
     <svg
+      ref={svgRef}
       viewBox="0 0 100 100"
-      className="w-full h-auto rounded-xl shadow-2xl"
-      style={{ background: "var(--field)" }}
+      className="w-full h-auto rounded-xl shadow-2xl select-none"
+      style={{ background: "var(--field)", touchAction: draggable ? "none" : "auto" }}
       preserveAspectRatio="xMidYMid meet"
+      onPointerMove={draggable ? handleMove : undefined}
+      onPointerUp={draggable ? endDrag : undefined}
+      onPointerCancel={draggable ? endDrag : undefined}
     >
       <defs>
         {ROUTE_COLORS.map((c, i) => (
@@ -115,25 +164,20 @@ export function FootballField({ play, assignment = {}, players = [], showLabels 
         ))}
       </defs>
 
-      {/* End zone */}
       <rect x="0" y="0" width="100" height="14" fill="var(--field-deep)" />
       <text x="50" y="9" textAnchor="middle" fontSize="4" fill="var(--chalk)"
         opacity="0.55" fontFamily="var(--font-display)" letterSpacing="0.3">END ZONE</text>
 
-      {/* Yard lines */}
       {[20, 35, 50, 65].map((y) => (
         <line key={y} x1="0" y1={y} x2="100" y2={y}
           stroke="var(--chalk)" strokeWidth="0.2" opacity="0.3" />
       ))}
-      {/* Sidelines */}
       <line x1="1" y1="0" x2="1" y2="100" stroke="var(--chalk)" strokeWidth="0.4" opacity="0.7" />
       <line x1="99" y1="0" x2="99" y2="100" stroke="var(--chalk)" strokeWidth="0.4" opacity="0.7" />
 
-      {/* LOS */}
       <line x1="0" y1={LOS} x2="100" y2={LOS} stroke="var(--chalk)" strokeWidth="0.6" />
       <text x="3" y={LOS - 1} fontSize="2.2" fill="var(--chalk)" opacity="0.6" fontFamily="var(--font-display)">LOS</text>
 
-      {/* Defenders */}
       {defenders.map((d, i) => (
         <g key={i}>
           <line x1={d.x - 2} y1={d.y - 2} x2={d.x + 2} y2={d.y + 2}
@@ -143,7 +187,6 @@ export function FootballField({ play, assignment = {}, players = [], showLabels 
         </g>
       ))}
 
-      {/* Routes & receivers */}
       {play.receivers.map((r, i) => {
         const color = ROUTE_COLORS[i % 5];
         const pts = routeSvgPoints(r.route, r.x, r.y, r.side ?? "right");
@@ -157,18 +200,23 @@ export function FootballField({ play, assignment = {}, players = [], showLabels 
             <path d={d} stroke={color} strokeWidth="0.8" fill="none"
               strokeLinecap="round" strokeLinejoin="round"
               markerEnd={`url(#arrow-${i % 5})`} />
-            <circle cx={start[0]} cy={start[1]} r="2.8" fill={color}
-              stroke="var(--chalk)" strokeWidth="0.3" />
+            <circle
+              cx={start[0]} cy={start[1]} r={draggable ? 3.6 : 2.8}
+              fill={color} stroke="var(--chalk)" strokeWidth={draggable ? 0.6 : 0.3}
+              style={{ cursor: draggable ? "grab" : "default" }}
+              onPointerDown={startDrag(r.id)}
+            />
             {showLabels && (
               <text x={start[0]} y={start[1] + 1} textAnchor="middle"
-                fontSize="2.4" fill="#0a1a0e" fontWeight="800">
+                fontSize="2.4" fill="#0a1a0e" fontWeight="800"
+                style={{ pointerEvents: "none" }}>
                 {playerLabel(r.id) || (i + 1)}
               </text>
             )}
             {showLabels && (
               <text x={end[0]} y={labelY} textAnchor="middle"
                 fontSize="2.2" fill={color} fontWeight="800"
-                style={{ paintOrder: "stroke", stroke: "rgba(0,0,0,0.6)", strokeWidth: 0.5 }}
+                style={{ paintOrder: "stroke", stroke: "rgba(0,0,0,0.6)", strokeWidth: 0.5, pointerEvents: "none" }}
                 fontFamily="var(--font-display)">
                 {r.route.toUpperCase()}
               </text>
@@ -177,13 +225,18 @@ export function FootballField({ play, assignment = {}, players = [], showLabels 
         );
       })}
 
-      {/* QB */}
-      <circle cx={play.qb.x} cy={LOS + play.qb.y * 0.5} r="3.2"
-        fill="var(--qb)" stroke="var(--field-deep)" strokeWidth="0.4" />
+      <circle
+        cx={play.qb.x} cy={LOS + play.qb.y * 0.5} r={draggable ? 3.8 : 3.2}
+        fill="var(--qb)" stroke="var(--field-deep)" strokeWidth="0.4"
+        style={{ cursor: draggable ? "grab" : "default" }}
+        onPointerDown={startDrag("qb")}
+      />
       <text x={play.qb.x} y={LOS + play.qb.y * 0.5 + 1.1} textAnchor="middle"
-        fontSize="2.6" fill="var(--field-deep)" fontWeight="800">
+        fontSize="2.6" fill="var(--field-deep)" fontWeight="800"
+        style={{ pointerEvents: "none" }}>
         {playerLabel("qb") || "QB"}
       </text>
     </svg>
   );
 }
+

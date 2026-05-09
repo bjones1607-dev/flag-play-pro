@@ -26,15 +26,31 @@ export function PlayBuilder({ defense, onSaved }: Props) {
   const [count, setCount] = useState(5);
   const [routes, setRoutes] = useState<RouteType[]>(["go", "slant", "curl", "out", "flat"]);
   const [purpose, setPurpose] = useState("");
+  const [positions, setPositions] = useState(SLOT_PRESETS.map((p) => ({ x: p.x, y: p.y })));
+  const [qb, setQb] = useState({ x: 50, y: 12 });
 
   const receivers: ReceiverRoute[] = SLOT_PRESETS.slice(0, count).map((p, i) => ({
-    id: p.id, x: p.x, y: p.y, side: p.side, route: routes[i] ?? "hitch",
+    id: p.id,
+    x: positions[i]?.x ?? p.x,
+    y: positions[i]?.y ?? p.y,
+    side: (positions[i]?.x ?? p.x) < 50 ? "left" : "right",
+    route: routes[i] ?? "hitch",
   }));
 
   const previewPlay: Play = {
     id: "preview", name: name || "New Play", defense,
-    qb: { x: 50, y: 12 }, receivers,
+    qb, receivers,
     purpose, formation: `${count}-receiver`, keyRead: "",
+  };
+
+  const moveReceiver = (id: string, x: number, y: number) => {
+    const idx = SLOT_PRESETS.findIndex((s) => s.id === id);
+    if (idx < 0) return;
+    setPositions((prev) => {
+      const next = [...prev];
+      next[idx] = { x, y };
+      return next;
+    });
   };
 
   const setRouteAt = (i: number, r: RouteType) => {
@@ -51,8 +67,16 @@ export function PlayBuilder({ defense, onSaved }: Props) {
 
   return (
     <div className="space-y-4">
-      <FootballField play={previewPlay} />
-
+      <div className="rounded-xl border border-primary/30 bg-primary/5 p-2">
+        <p className="text-[10px] uppercase tracking-widest text-primary font-display text-center mb-2">
+          Drag receivers & QB to position · Pick routes below
+        </p>
+        <FootballField
+          play={previewPlay}
+          onReceiverMove={moveReceiver}
+          onQbMove={(x, y) => setQb({ x, y })}
+        />
+      </div>
       <div className="space-y-3">
         <Input placeholder="Play name" value={name} onChange={(e) => setName(e.target.value)} />
 

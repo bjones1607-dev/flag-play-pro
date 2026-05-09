@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import type { DefenseType, Play } from "@/lib/types";
 import { PRESET_PLAYS } from "@/lib/plays";
-import { loadCustomPlays } from "@/lib/storage";
+import { loadCustomPlays, saveCustomPlays } from "@/lib/storage";
 import { FootballField } from "@/components/FootballField";
 import { RosterPanel } from "@/components/RosterPanel";
 import { AssignmentPanel } from "@/components/AssignmentPanel";
@@ -10,7 +10,7 @@ import { PlayBuilder } from "@/components/PlayBuilder";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shuffle, Users, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Shuffle, Users, Plus, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
@@ -77,7 +77,10 @@ function Index() {
           <div className="flex gap-1">
             <Sheet>
               <SheetTrigger asChild>
-                <Button size="icon" variant="secondary"><Users className="h-4 w-4" /></Button>
+                <Button variant="secondary" className="gap-1.5 px-3">
+                  <Users className="h-4 w-4" />
+                  <span className="font-display text-sm">ROSTER</span>
+                </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[90vw] sm:w-[400px]">
                 <SheetHeader><SheetTitle className="font-display text-2xl">Roster</SheetTitle></SheetHeader>
@@ -169,20 +172,38 @@ function Index() {
               <AssignmentPanel play={current} key={current.id} />
             </TabsContent>
 
-            <TabsContent value="library" className="mt-4 space-y-2">
+            <TabsContent value="library" className="mt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  {filtered.length} plays · {filtered.filter(p => p.custom).length} custom
+                </p>
+                <Button size="sm" variant="ghost" onClick={() => setBuilderOpen(true)}>
+                  <Plus className="h-3 w-3 mr-1" /> New
+                </Button>
+              </div>
               {filtered.map((p) => (
-                <button key={p.id} onClick={() => setSelectedId(p.id)}
-                  className={`w-full text-left p-3 rounded-lg border transition ${
+                <div key={p.id}
+                  className={`flex items-center gap-2 p-3 rounded-lg border transition ${
                     p.id === current.id
                       ? "border-primary bg-primary/10"
-                      : "border-border bg-secondary hover:bg-muted"
+                      : "border-border bg-secondary"
                   }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="font-display text-lg leading-none">{p.name}</div>
-                    {p.custom && <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent text-accent-foreground font-display">CUSTOM</span>}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">{p.formation}</div>
-                </button>
+                  <button onClick={() => setSelectedId(p.id)} className="flex-1 text-left">
+                    <div className="flex items-center gap-2">
+                      <div className="font-display text-lg leading-none">{p.name}</div>
+                      {p.custom && <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent text-accent-foreground font-display">CUSTOM</span>}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">{p.formation} · {p.purpose.slice(0, 50)}{p.purpose.length > 50 ? "…" : ""}</div>
+                  </button>
+                  {p.custom && (
+                    <Button size="icon" variant="ghost" onClick={() => {
+                      const next = customs.filter(c => c.id !== p.id);
+                      setCustoms(next); saveCustomPlays(next);
+                    }}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  )}
+                </div>
               ))}
             </TabsContent>
           </Tabs>
