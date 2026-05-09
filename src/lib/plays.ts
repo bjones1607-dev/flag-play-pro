@@ -197,6 +197,105 @@ export const PRESET_PLAYS: Play[] = [
       { id: "r5", ...POS.backfield, route: "flat", side: "left" },
     ],
   },
+  // Additional ZONE plays
+  {
+    id: "levels", name: "Levels", defense: "zone", qb: QB,
+    formation: "Doubles", purpose: "Two in-routes at different depths attack zone seams.",
+    keyRead: "Throw the deeper in-route if LB jumps shallow.",
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "in", side: "left" },
+      { id: "r2", ...POS.left, route: "dig", side: "left" },
+      { id: "r3", ...POS.right, route: "hitch", side: "right" },
+      { id: "r4", ...POS.farRight, route: "go", side: "right" },
+      { id: "r5", ...POS.backfield, route: "flat", side: "right" },
+    ],
+  },
+  {
+    id: "snag", name: "Snag", defense: "zone", qb: QB,
+    formation: "Trips Right", purpose: "Triangle stretch: corner over, snag under, flat wide.",
+    keyRead: "High-low and inside-out the flat defender.",
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "go", side: "left" },
+      { id: "r2", ...POS.slotRight, route: "corner", side: "right" },
+      { id: "r3", ...POS.right, route: "curl", side: "right" },
+      { id: "r4", ...POS.farRight, route: "flat", side: "right" },
+      { id: "r5", ...POS.backfield, route: "hitch", side: "left" },
+    ],
+  },
+  {
+    id: "y-stick", name: "Y Stick", defense: "zone", qb: QB,
+    formation: "Trips Left", purpose: "Quick stick route vs. soft zone.",
+    keyRead: "If flat defender widens, hit the stick.",
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "out", side: "left" },
+      { id: "r2", ...POS.left, route: "curl", side: "left" },
+      { id: "r3", ...POS.slotLeft, route: "flat", side: "left" },
+      { id: "r4", ...POS.farRight, route: "post", side: "right" },
+      { id: "r5", ...POS.backfield, route: "screen", side: "left" },
+    ],
+  },
+  {
+    id: "shallow-cross", name: "Shallow Cross", defense: "zone", qb: QB,
+    formation: "Doubles", purpose: "Shallow drag pulls underneath defenders.",
+    keyRead: "Hit drag in stride away from coverage.",
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "cross", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "dig", side: "left" },
+      { id: "r3", ...POS.right, route: "go", side: "right" },
+      { id: "r4", ...POS.farRight, route: "curl", side: "right" },
+      { id: "r5", ...POS.backfield, route: "hitch", side: "right" },
+    ],
+  },
+
+  // Additional MAN plays
+  {
+    id: "rub-slants", name: "Rub Slants", defense: "man", qb: QB,
+    formation: "Bunch Right", purpose: "Bunch creates natural pick on slants.",
+    keyRead: "Throw to receiver coming free from rub.",
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "go", side: "left" },
+      { id: "r2", x: 60, y: 4, route: "slant", side: "right" },
+      { id: "r3", x: 68, y: 4, route: "out", side: "right" },
+      { id: "r4", x: 76, y: 4, route: "slant", side: "right" },
+      { id: "r5", ...POS.backfield, route: "flat", side: "left" },
+    ],
+  },
+  {
+    id: "double-post", name: "Double Post", defense: "man", qb: QB,
+    formation: "Doubles", purpose: "Two posts overload the deep middle.",
+    keyRead: "Throw away from the deep safety.",
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "post", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "out", side: "left" },
+      { id: "r3", ...POS.slotRight, route: "in", side: "right" },
+      { id: "r4", ...POS.farRight, route: "post", side: "right" },
+      { id: "r5", ...POS.backfield, route: "flat", side: "right" },
+    ],
+  },
+  {
+    id: "switch-verts", name: "Switch Verticals", defense: "man", qb: QB,
+    formation: "Spread", purpose: "Crossing releases pick man defenders deep.",
+    keyRead: "Find the receiver who won the release.",
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "go", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "corner", side: "left" },
+      { id: "r3", ...POS.slotRight, route: "corner", side: "right" },
+      { id: "r4", ...POS.farRight, route: "go", side: "right" },
+      { id: "r5", ...POS.backfield, route: "screen", side: "right" },
+    ],
+  },
+  {
+    id: "stick-nod", name: "Stick-Nod", defense: "man", qb: QB,
+    formation: "Trips Right", purpose: "Fake hitch then break upfield to beat tight man.",
+    keyRead: "Sell the hitch, then look deep.",
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "in", side: "left" },
+      { id: "r2", ...POS.slotRight, route: "go", side: "right" },
+      { id: "r3", ...POS.right, route: "go", side: "right" },
+      { id: "r4", ...POS.farRight, route: "out", side: "right" },
+      { id: "r5", ...POS.backfield, route: "curl", side: "left" },
+    ],
+  },
 ];
 
 // Defense positions (3 defenders) in % coords.
