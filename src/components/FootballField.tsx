@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import type { Play, Player, PlayerAssignment } from "@/lib/types";
 import { defensePositions } from "@/lib/plays";
 import type { RouteType } from "@/lib/types";
