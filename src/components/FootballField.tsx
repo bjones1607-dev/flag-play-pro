@@ -19,6 +19,8 @@ interface Props {
   assignment?: PlayerAssignment;
   players?: Player[];
   showLabels?: boolean;
+  onReceiverMove?: (id: string, x: number, y: number) => void;
+  onQbMove?: (x: number, y: number) => void;
 }
 
 // Returns array of [x, y] points in SVG coords for the given route starting at (sx, sBehindLOS).
