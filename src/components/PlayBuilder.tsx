@@ -67,8 +67,16 @@ export function PlayBuilder({ defense, onSaved }: Props) {
 
   return (
     <div className="space-y-4">
-      <FootballField play={previewPlay} />
-
+      <div className="rounded-xl border border-primary/30 bg-primary/5 p-2">
+        <p className="text-[10px] uppercase tracking-widest text-primary font-display text-center mb-2">
+          Drag receivers & QB to position · Pick routes below
+        </p>
+        <FootballField
+          play={previewPlay}
+          onReceiverMove={moveReceiver}
+          onQbMove={(x, y) => setQb({ x, y })}
+        />
+      </div>
       <div className="space-y-3">
         <Input placeholder="Play name" value={name} onChange={(e) => setName(e.target.value)} />
 
