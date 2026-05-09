@@ -77,7 +77,10 @@ function Index() {
           <div className="flex gap-1">
             <Sheet>
               <SheetTrigger asChild>
-                <Button size="icon" variant="secondary"><Users className="h-4 w-4" /></Button>
+                <Button variant="secondary" className="gap-1.5 px-3">
+                  <Users className="h-4 w-4" />
+                  <span className="font-display text-sm">ROSTER</span>
+                </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[90vw] sm:w-[400px]">
                 <SheetHeader><SheetTitle className="font-display text-2xl">Roster</SheetTitle></SheetHeader>
