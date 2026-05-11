@@ -23,6 +23,8 @@ interface Props {
   players?: Player[];
   showLabels?: boolean;
   big?: boolean; // larger labels/markers for huddle mode
+  animate?: boolean; // animate routes drawing in
+  animateKey?: number; // bump to retrigger animation
   onReceiverMove?: (id: string, x: number, y: number) => void;
   onQbMove?: (x: number, y: number) => void;
 }
