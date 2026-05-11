@@ -132,7 +132,7 @@ function routeSvgPoints(
 }
 
 export const FootballField = forwardRef<FootballFieldHandle, Props>(function FootballField(
-  { play, assignment = {}, players = [], showLabels = true, big = false, onReceiverMove, onQbMove },
+  { play, assignment = {}, players = [], showLabels = true, big = false, animate = false, animateKey = 0, onReceiverMove, onQbMove },
   ref,
 ) {
   const svgRef = useRef<SVGSVGElement>(null);
