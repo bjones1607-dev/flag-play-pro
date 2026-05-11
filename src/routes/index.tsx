@@ -222,6 +222,11 @@ function Index() {
             </p>
           </div>
           <div className="flex gap-1">
+            <CallSheet
+              plays={allPlays.filter((p) => p.defense === defense)}
+              onSelect={setSelectedId}
+              onShowHuddle={() => setHuddleOpen(true)}
+            />
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="secondary" className="gap-1.5 px-3">
