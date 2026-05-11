@@ -67,3 +67,12 @@ export function useFavorites(): {
   };
   return { ids, has: (id) => ids.has(id), toggle };
 }
+
+export function useRecentCalls(): RecentCall[] {
+  const [v, setV] = useState<RecentCall[]>([]);
+  useEffect(() => {
+    setV(loadRecentCalls());
+    return subscribe([EVENTS.RECENT], () => setV(loadRecentCalls()));
+  }, []);
+  return v;
+}
