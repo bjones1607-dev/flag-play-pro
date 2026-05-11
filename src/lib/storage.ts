@@ -68,9 +68,30 @@ export const saveFavorites = (ids: string[]) => {
   emit(FAV_EVENT);
 };
 
+export interface RecentCall { id: string; name: string; at: number; result?: "good" | "bad" }
+export const loadRecentCalls = (): RecentCall[] => {
+  if (typeof window === "undefined") return [];
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { return []; }
+};
+export const saveRecentCalls = (r: RecentCall[]) => {
+  localStorage.setItem(RECENT_KEY, JSON.stringify(r.slice(0, 25)));
+  emit(RECENT_EVENT);
+};
+export const pushRecentCall = (play: { id: string; name: string }) => {
+  const list = loadRecentCalls();
+  saveRecentCalls([{ id: play.id, name: play.name, at: Date.now() }, ...list]);
+};
+export const tagLastCall = (result: "good" | "bad") => {
+  const list = loadRecentCalls();
+  if (!list[0]) return;
+  list[0] = { ...list[0], result };
+  saveRecentCalls(list);
+};
+
 export const EVENTS = {
   ROSTER: ROSTER_EVENT,
   ASSIGN: ASSIGN_EVENT,
   PLAYS: PLAYS_EVENT,
   FAV: FAV_EVENT,
+  RECENT: RECENT_EVENT,
 };
