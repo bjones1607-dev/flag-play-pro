@@ -5,7 +5,9 @@ import {
   loadCustomPlays,
   loadFavorites,
   loadPlayers,
+  loadRecentCalls,
   saveFavorites,
+  type RecentCall,
 } from "@/lib/storage";
 import type { Play, Player, PlayerAssignment } from "@/lib/types";
 
@@ -64,4 +66,13 @@ export function useFavorites(): {
     setIds(next);
   };
   return { ids, has: (id) => ids.has(id), toggle };
+}
+
+export function useRecentCalls(): RecentCall[] {
+  const [v, setV] = useState<RecentCall[]>([]);
+  useEffect(() => {
+    setV(loadRecentCalls());
+    return subscribe([EVENTS.RECENT], () => setV(loadRecentCalls()));
+  }, []);
+  return v;
 }

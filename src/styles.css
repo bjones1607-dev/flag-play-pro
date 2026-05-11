@@ -113,3 +113,18 @@
   }
 }
 
+@keyframes route-draw {
+  from { stroke-dashoffset: var(--route-len, 200); }
+  to   { stroke-dashoffset: 0; }
+}
+.route-animate {
+  stroke-dasharray: var(--route-len, 200);
+  stroke-dashoffset: var(--route-len, 200);
+  animation: route-draw 1.4s ease-out forwards;
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; color: black !important; }
+}
+

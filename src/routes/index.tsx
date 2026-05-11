@@ -9,6 +9,7 @@ import { RosterPanel } from "@/components/RosterPanel";
 import { AssignmentPanel } from "@/components/AssignmentPanel";
 import { PlayBuilder } from "@/components/PlayBuilder";
 import { HuddleView } from "@/components/HuddleView";
+import { CallSheet } from "@/components/CallSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -221,6 +222,11 @@ function Index() {
             </p>
           </div>
           <div className="flex gap-1">
+            <CallSheet
+              plays={allPlays.filter((p) => p.defense === defense)}
+              onSelect={setSelectedId}
+              onShowHuddle={() => setHuddleOpen(true)}
+            />
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="secondary" className="gap-1.5 px-3">
