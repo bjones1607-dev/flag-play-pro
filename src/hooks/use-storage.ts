@@ -5,7 +5,9 @@ import {
   loadCustomPlays,
   loadFavorites,
   loadPlayers,
+  loadRecentCalls,
   saveFavorites,
+  type RecentCall,
 } from "@/lib/storage";
 import type { Play, Player, PlayerAssignment } from "@/lib/types";
 
