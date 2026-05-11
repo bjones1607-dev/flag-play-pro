@@ -147,14 +147,31 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
     qbAction,
   };
 
+  const [snap, setSnap] = useState(false);
+  const snapVal = (n: number, step: number) => Math.round(n / step) * step;
+
   const moveReceiver = (id: string, x: number, y: number) => {
     const idx = SLOT_PRESETS.findIndex((s) => s.id === id);
     if (idx < 0) return;
     setPositions((prev) => {
       const next = [...prev];
-      next[idx] = { x, y };
+      next[idx] = snap ? { x: snapVal(x, 4), y: snapVal(y, 2) } : { x, y };
       return next;
     });
+  };
+
+  const mirror = () => {
+    setPositions((prev) => prev.map((p) => ({ x: 100 - p.x, y: p.y })));
+    setQb((q) => ({ x: 100 - q.x, y: q.y }));
+    if (qbAction === "keep-left") setQbAction("keep-right");
+    else if (qbAction === "keep-right") setQbAction("keep-left");
+    toast("Mirrored L↔R");
+  };
+
+  const reset = () => {
+    setPositions(SLOT_PRESETS.map((p) => ({ x: p.x, y: p.y })));
+    setQb({ x: 50, y: 12 });
+    toast("Positions reset");
   };
 
   const setRouteAt = (i: number, r: RouteType) => {
