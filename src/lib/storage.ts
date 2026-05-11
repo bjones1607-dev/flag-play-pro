@@ -4,11 +4,13 @@ const PLAYERS_KEY = "ff_players_v1";
 const CUSTOM_PLAYS_KEY = "ff_custom_plays_v1";
 const ASSIGN_KEY = "ff_assignment_v1";
 const FAVORITES_KEY = "ff_favorites_v1";
+const RECENT_KEY = "ff_recent_calls_v1";
 
 const ROSTER_EVENT = "ff:roster-changed";
 const ASSIGN_EVENT = "ff:assignment-changed";
 const PLAYS_EVENT = "ff:plays-changed";
 const FAV_EVENT = "ff:favorites-changed";
+const RECENT_EVENT = "ff:recent-changed";
 
 const emit = (name: string) => {
   if (typeof window !== "undefined") window.dispatchEvent(new Event(name));
