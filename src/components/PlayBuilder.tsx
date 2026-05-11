@@ -217,6 +217,31 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
           onReceiverMove={moveReceiver}
           onQbMove={(x, y) => setQb({ x, y })}
         />
+        <div className="flex flex-wrap gap-1.5 mt-2 justify-center">
+          <button
+            type="button"
+            onClick={mirror}
+            className="text-[10px] px-2 py-1 rounded-md font-display tracking-wider bg-secondary hover:bg-primary/20"
+          >
+            ↔ MIRROR
+          </button>
+          <button
+            type="button"
+            onClick={reset}
+            className="text-[10px] px-2 py-1 rounded-md font-display tracking-wider bg-secondary hover:bg-primary/20"
+          >
+            ⟲ RESET
+          </button>
+          <button
+            type="button"
+            onClick={() => setSnap((s) => !s)}
+            className={`text-[10px] px-2 py-1 rounded-md font-display tracking-wider ${
+              snap ? "bg-primary text-primary-foreground" : "bg-secondary"
+            }`}
+          >
+            ▦ SNAP {snap ? "ON" : "OFF"}
+          </button>
+        </div>
       </div>
       <div className="space-y-3">
         <Input placeholder="Play name" value={name} onChange={(e) => setName(e.target.value)} />
