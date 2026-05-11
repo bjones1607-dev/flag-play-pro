@@ -493,9 +493,15 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
         const d = pts.map((p, idx) => `${idx === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
         const end = pts[pts.length - 1];
         const labelY = end[1] < 8 ? end[1] + 4 : end[1] - 1.8;
+        let plen = 0;
+        for (let k = 1; k < pts.length; k++) {
+          const dx = pts[k][0] - pts[k - 1][0];
+          const dy = pts[k][1] - pts[k - 1][1];
+          plen += Math.sqrt(dx * dx + dy * dy);
+        }
 
         return (
-          <g key={r.id}>
+          <g key={`${r.id}-${animateKey}`}>
             <path
               d={d}
               stroke={isRunner ? "var(--primary)" : color}
@@ -505,6 +511,8 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
               strokeLinecap="round"
               strokeLinejoin="round"
               markerEnd={isRunner ? "url(#run-arrow)" : `url(#arrow-${i % 5})`}
+              className={animate && !isRunner ? "route-animate" : undefined}
+              style={animate && !isRunner ? ({ ["--route-len" as unknown as string]: plen.toFixed(1) } as React.CSSProperties) : undefined}
             />
             <circle
               cx={start[0]}
