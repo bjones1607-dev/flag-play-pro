@@ -68,12 +68,32 @@ function Sideline() {
 
   const advanceDown = (good: boolean) => {
     if (good) {
-      // assume gained at least the distance — fresh 1st & 10
-      setSituation({ ...situation, down: 1, dist: 10 });
+      if (situation.series === "to-score") {
+        toast.success("TOUCHDOWN — +6");
+        setSituation({
+          ...situation,
+          ourScore: situation.ourScore + 6,
+          series: "to-mid",
+          down: 1,
+          yardLine: 5,
+        });
+      } else {
+        setSituation({
+          ...situation,
+          series: "to-score",
+          down: 1,
+          yardLine: Math.max(situation.yardLine, 25),
+        });
+      }
+      return;
+    }
+    const md = situation.series === "to-mid" ? 3 : 4;
+    const next = situation.down + 1;
+    if (next > md) {
+      toast("Turnover on downs — reset");
+      setSituation({ ...situation, series: "to-mid", down: 1, yardLine: 5 });
     } else {
-      const next = (situation.down + 1) as 1 | 2 | 3 | 4;
-      if (next > 4) setSituation({ ...situation, down: 1, dist: 10 });
-      else setSituation({ ...situation, down: next });
+      setSituation({ ...situation, down: next as 1 | 2 | 3 | 4 });
     }
   };
 
@@ -241,7 +261,7 @@ function Sideline() {
                 {recent[0] ? (
                   <div className="flex items-center gap-2">
                     <div className="flex-1 font-display text-lg leading-none truncate">{recent[0].name}</div>
-                    <Button size="sm" onClick={() => { tagLastCall("good"); advanceDown(true); toast.success("Good — fresh set"); }}>
+                    <Button size="sm" onClick={() => { tagLastCall("good"); advanceDown(true); }}>
                       <ThumbsUp className="h-4 w-4 mr-1.5" /> GOOD
                     </Button>
                     <Button size="sm" variant="secondary" onClick={() => { tagLastCall("bad"); advanceDown(false); toast("Marked bad — next down"); }}>

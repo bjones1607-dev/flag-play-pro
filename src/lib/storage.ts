@@ -89,20 +89,27 @@ export const pushRecentCall = (play: { id: string; name: string }) => {
   saveRecentCalls([{ id: play.id, name: play.name, at: now }, ...list]);
 };
 
-// ===== Game-day situation (down/distance/score/period) =====
+// ===== Game-day situation =====
+// League rules: 50-yard field. 3 downs to reach midfield (yardLine 25) for a
+// first down, then 4 downs to score (yardLine 50 = opponent goal line).
 export interface Situation {
   down: 1 | 2 | 3 | 4;
-  dist: number;
+  series: "to-mid" | "to-score"; // current series objective
   ourScore: number;
   oppScore: number;
   period: 1 | 2 | 3 | 4;
-  yardLine: number; // 1-99, our side ≤50
+  yardLine: number; // 1-49 (0=own goal, 25=midfield, 50=opp goal)
+  // legacy, kept for back-compat with old saves
+  dist?: number;
 }
-const SITUATION_KEY = "ff_situation_v1";
+const SITUATION_KEY = "ff_situation_v2";
 const SITUATION_EVENT = "ff:situation-changed";
 export const DEFAULT_SITUATION: Situation = {
-  down: 1, dist: 10, ourScore: 0, oppScore: 0, period: 1, yardLine: 25,
+  down: 1, series: "to-mid", ourScore: 0, oppScore: 0, period: 1, yardLine: 5,
 };
+export const yardsToGo = (s: Situation): number =>
+  s.series === "to-mid" ? Math.max(0, 25 - s.yardLine) : Math.max(0, 50 - s.yardLine);
+export const maxDown = (s: Situation): 3 | 4 => (s.series === "to-mid" ? 3 : 4);
 export const loadSituation = (): Situation => {
   if (typeof window === "undefined") return DEFAULT_SITUATION;
   try {
