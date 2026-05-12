@@ -228,6 +228,12 @@ function Index() {
               onSelect={setSelectedId}
               onShowHuddle={() => setHuddleOpen(true)}
             />
+            <Link to="/sideline">
+              <Button variant="secondary" className="gap-1.5 px-3" aria-label="Open sideline mode">
+                <Tv className="h-4 w-4" />
+                <span className="font-display text-sm hidden sm:inline">SIDELINE</span>
+              </Button>
+            </Link>
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="secondary" className="gap-1.5 px-3">
