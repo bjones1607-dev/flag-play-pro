@@ -120,11 +120,24 @@
 .route-animate {
   stroke-dasharray: var(--route-len, 200);
   stroke-dashoffset: var(--route-len, 200);
-  animation: route-draw 1.4s ease-out forwards;
+  animation: route-draw var(--route-dur, 1.4s) ease-out forwards;
 }
 
 @media print {
   .no-print { display: none !important; }
   body { background: white !important; color: black !important; }
+  .wristband-print {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6pt;
+    font-family: "Bebas Neue", Impact, sans-serif;
+  }
+  .wristband-print .wb-cell {
+    border: 1pt solid #000;
+    padding: 4pt 6pt;
+    break-inside: avoid;
+    color: #000 !important;
+  }
 }
+
 
