@@ -68,12 +68,32 @@ function Sideline() {
 
   const advanceDown = (good: boolean) => {
     if (good) {
-      // assume gained at least the distance — fresh 1st & 10
-      setSituation({ ...situation, down: 1, dist: 10 });
+      if (situation.series === "to-score") {
+        toast.success("TOUCHDOWN — +6");
+        setSituation({
+          ...situation,
+          ourScore: situation.ourScore + 6,
+          series: "to-mid",
+          down: 1,
+          yardLine: 5,
+        });
+      } else {
+        setSituation({
+          ...situation,
+          series: "to-score",
+          down: 1,
+          yardLine: Math.max(situation.yardLine, 25),
+        });
+      }
+      return;
+    }
+    const md = situation.series === "to-mid" ? 3 : 4;
+    const next = situation.down + 1;
+    if (next > md) {
+      toast("Turnover on downs — reset");
+      setSituation({ ...situation, series: "to-mid", down: 1, yardLine: 5 });
     } else {
-      const next = (situation.down + 1) as 1 | 2 | 3 | 4;
-      if (next > 4) setSituation({ ...situation, down: 1, dist: 10 });
-      else setSituation({ ...situation, down: next });
+      setSituation({ ...situation, down: next as 1 | 2 | 3 | 4 });
     }
   };
 
