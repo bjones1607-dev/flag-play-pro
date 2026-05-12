@@ -261,7 +261,7 @@ function Sideline() {
                 {recent[0] ? (
                   <div className="flex items-center gap-2">
                     <div className="flex-1 font-display text-lg leading-none truncate">{recent[0].name}</div>
-                    <Button size="sm" onClick={() => { tagLastCall("good"); advanceDown(true); toast.success("Good — fresh set"); }}>
+                    <Button size="sm" onClick={() => { tagLastCall("good"); advanceDown(true); }}>
                       <ThumbsUp className="h-4 w-4 mr-1.5" /> GOOD
                     </Button>
                     <Button size="sm" variant="secondary" onClick={() => { tagLastCall("bad"); advanceDown(false); toast("Marked bad — next down"); }}>
