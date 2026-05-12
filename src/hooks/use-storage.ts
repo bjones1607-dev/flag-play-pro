@@ -6,8 +6,11 @@ import {
   loadFavorites,
   loadPlayers,
   loadRecentCalls,
+  loadSituation,
   saveFavorites,
+  saveSituation,
   type RecentCall,
+  type Situation,
 } from "@/lib/storage";
 import type { Play, Player, PlayerAssignment } from "@/lib/types";
 
@@ -75,4 +78,14 @@ export function useRecentCalls(): RecentCall[] {
     return subscribe([EVENTS.RECENT], () => setV(loadRecentCalls()));
   }, []);
   return v;
+}
+
+export function useSituation(): [Situation, (s: Situation) => void] {
+  const [v, setV] = useState<Situation>(() => loadSituation());
+  useEffect(() => {
+    setV(loadSituation());
+    return subscribe([EVENTS.SITUATION], () => setV(loadSituation()));
+  }, []);
+  const set = (s: Situation) => { saveSituation(s); setV(s); };
+  return [v, set];
 }

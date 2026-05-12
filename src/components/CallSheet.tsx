@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Play } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { ClipboardList, Printer, Trash2, ThumbsUp, ThumbsDown, Star } from "lucide-react";
 import { useFavorites, useRecentCalls } from "@/hooks/use-storage";
 import { pushRecentCall, saveRecentCalls, tagLastCall } from "@/lib/storage";
@@ -60,6 +60,9 @@ export function CallSheet({ plays, onSelect, onShowHuddle }: Props) {
               <Printer className="h-3 w-3" /> Print Wristband
             </button>
           </SheetTitle>
+          <SheetDescription className="sr-only">
+            Numbered call sheet for game day. Tap a play to call it and open the huddle view.
+          </SheetDescription>
         </SheetHeader>
 
         {/* Recent calls */}

@@ -248,7 +248,7 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
 
         <div className="grid grid-cols-2 gap-2">
           <button
-            onClick={() => setPlayType("pass")}
+            onClick={() => { setPlayType("pass"); setRunnerIdx(-1); setQbAction("pass"); }}
             className={`py-2 rounded-md font-display tracking-wide text-sm transition ${
               playType === "pass"
                 ? "bg-primary text-primary-foreground"
@@ -258,7 +258,11 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
             PASS PLAY
           </button>
           <button
-            onClick={() => setPlayType("run")}
+            onClick={() => {
+              setPlayType("run");
+              // Sensible default: if no runner selected, set QB keep-right
+              if (runnerIdx < 0 && qbAction === "pass") setQbAction("keep-right");
+            }}
             className={`py-2 rounded-md font-display tracking-wide text-sm transition ${
               playType === "run"
                 ? "bg-primary text-primary-foreground"
@@ -356,7 +360,14 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
                     {playType === "run" && (
                       <button
                         type="button"
-                        onClick={() => setRunnerIdx(isRunner ? -1 : i)}
+                        onClick={() => {
+                          const next = isRunner ? -1 : i;
+                          setRunnerIdx(next);
+                          // If removing runner with QB still set to "pass" (handoff), default to keep-right
+                          if (next === -1 && qbAction === "pass") setQbAction("keep-right");
+                          // If selecting a runner and QB was keeping it, switch to handoff
+                          if (next !== -1 && qbAction !== "pass") setQbAction("pass");
+                        }}
                         className={`text-[9px] px-1.5 py-0.5 rounded font-display tracking-wider ${
                           isRunner
                             ? "bg-primary text-primary-foreground"

@@ -79,7 +79,40 @@ export const saveRecentCalls = (r: RecentCall[]) => {
 };
 export const pushRecentCall = (play: { id: string; name: string }) => {
   const list = loadRecentCalls();
-  saveRecentCalls([{ id: play.id, name: play.name, at: Date.now() }, ...list]);
+  const now = Date.now();
+  // De-dupe: if same play was just called within 10s, refresh timestamp instead of stacking.
+  if (list[0] && list[0].id === play.id && now - list[0].at < 10_000) {
+    list[0] = { ...list[0], at: now };
+    saveRecentCalls(list);
+    return;
+  }
+  saveRecentCalls([{ id: play.id, name: play.name, at: now }, ...list]);
+};
+
+// ===== Game-day situation (down/distance/score/period) =====
+export interface Situation {
+  down: 1 | 2 | 3 | 4;
+  dist: number;
+  ourScore: number;
+  oppScore: number;
+  period: 1 | 2 | 3 | 4;
+  yardLine: number; // 1-99, our side ≤50
+}
+const SITUATION_KEY = "ff_situation_v1";
+const SITUATION_EVENT = "ff:situation-changed";
+export const DEFAULT_SITUATION: Situation = {
+  down: 1, dist: 10, ourScore: 0, oppScore: 0, period: 1, yardLine: 25,
+};
+export const loadSituation = (): Situation => {
+  if (typeof window === "undefined") return DEFAULT_SITUATION;
+  try {
+    const raw = localStorage.getItem(SITUATION_KEY);
+    return raw ? { ...DEFAULT_SITUATION, ...JSON.parse(raw) } : DEFAULT_SITUATION;
+  } catch { return DEFAULT_SITUATION; }
+};
+export const saveSituation = (s: Situation) => {
+  localStorage.setItem(SITUATION_KEY, JSON.stringify(s));
+  emit(SITUATION_EVENT);
 };
 export const tagLastCall = (result: "good" | "bad") => {
   const list = loadRecentCalls();
@@ -94,4 +127,5 @@ export const EVENTS = {
   PLAYS: PLAYS_EVENT,
   FAV: FAV_EVENT,
   RECENT: RECENT_EVENT,
+  SITUATION: "ff:situation-changed",
 };
