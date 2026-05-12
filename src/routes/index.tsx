@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DefenseType, Play, PlayTag } from "@/lib/types";
 import { PRESET_PLAYS } from "@/lib/plays";
@@ -12,7 +12,7 @@ import { HuddleView } from "@/components/HuddleView";
 import { CallSheet } from "@/components/CallSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Shuffle,
@@ -28,6 +28,7 @@ import {
   Copy,
   Share2,
   ImageDown,
+  Tv,
 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { useAssignment, useCustomPlays, useFavorites, usePlayers } from "@/hooks/use-storage";
@@ -237,6 +238,9 @@ function Index() {
               <SheetContent side="right" className="w-[90vw] sm:w-[400px]">
                 <SheetHeader>
                   <SheetTitle className="font-display text-2xl">Roster</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Add and manage your players. Used in the Assign tab to put names on the field.
+                  </SheetDescription>
                 </SheetHeader>
                 <div className="mt-6">
                   <RosterPanel />
@@ -258,6 +262,9 @@ function Index() {
               <SheetContent side="bottom" className="h-[92vh] overflow-y-auto">
                 <SheetHeader>
                   <SheetTitle className="font-display text-2xl">{builderTitle}</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Drag receivers and the QB to position them, pick a route for each player, and save your custom play.
+                  </SheetDescription>
                 </SheetHeader>
                 <div className="mt-4">
                   <PlayBuilder
