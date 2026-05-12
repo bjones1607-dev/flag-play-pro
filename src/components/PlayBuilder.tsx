@@ -356,7 +356,14 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
                     {playType === "run" && (
                       <button
                         type="button"
-                        onClick={() => setRunnerIdx(isRunner ? -1 : i)}
+                        onClick={() => {
+                          const next = isRunner ? -1 : i;
+                          setRunnerIdx(next);
+                          // If removing runner with QB still set to "pass" (handoff), default to keep-right
+                          if (next === -1 && qbAction === "pass") setQbAction("keep-right");
+                          // If selecting a runner and QB was keeping it, switch to handoff
+                          if (next !== -1 && qbAction !== "pass") setQbAction("pass");
+                        }}
                         className={`text-[9px] px-1.5 py-0.5 rounded font-display tracking-wider ${
                           isRunner
                             ? "bg-primary text-primary-foreground"
