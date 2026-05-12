@@ -29,7 +29,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.left, route: "post", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "post", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
@@ -45,7 +45,7 @@ export const PRESET_PLAYS: Play[] = [
     tags: ["short"],
     receivers: [
       { id: "r1", ...POS.left, route: "hitch", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "hitch", side: "right", isCenter: true },
       { id: "r3", x: 60, y: 4, route: "slant", side: "right" },
       { id: "r4", x: 68, y: 4, route: "slant", side: "right" },
       { id: "r5", x: 76, y: 4, route: "slant", side: "right" },
@@ -62,7 +62,7 @@ export const PRESET_PLAYS: Play[] = [
     tags: ["short", "third-long"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "dig", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "hitch", side: "right", isCenter: true },
       { id: "r3", ...POS.slotRight, route: "corner", side: "right" },
       { id: "r4", ...POS.right, route: "out", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
@@ -80,7 +80,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "go", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "go", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "go", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
@@ -97,7 +97,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "curl", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "flat", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "hitch", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "flat", side: "right" },
       { id: "r5", ...POS.farRight, route: "curl", side: "right" },
     ],
@@ -114,7 +114,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.left, route: "hitch", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "corner", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "hitch", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "corner", side: "right" },
       { id: "r5", ...POS.right, route: "hitch", side: "right" },
     ],
@@ -147,7 +147,7 @@ export const PRESET_PLAYS: Play[] = [
     tags: ["short"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "hitch", side: "right", isCenter: true },
       { id: "r3", ...POS.slotRight, route: "out", side: "right" },
       { id: "r4", ...POS.right, route: "curl", side: "right" },
       { id: "r5", ...POS.farRight, route: "flat", side: "right" },
@@ -165,7 +165,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "in", side: "left" },
       { id: "r2", ...POS.left, route: "dig", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "drag", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "hitch", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
@@ -181,7 +181,7 @@ export const PRESET_PLAYS: Play[] = [
     tags: ["short"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "hitch", side: "right", isCenter: true },
       { id: "r3", ...POS.slotRight, route: "corner", side: "right" },
       { id: "r4", ...POS.right, route: "curl", side: "right" },
       { id: "r5", ...POS.farRight, route: "flat", side: "right" },
@@ -200,7 +200,7 @@ export const PRESET_PLAYS: Play[] = [
       { id: "r1", ...POS.farLeft, route: "out", side: "left" },
       { id: "r2", ...POS.left, route: "curl", side: "left" },
       { id: "r3", ...POS.slotLeft, route: "flat", side: "left" },
-      { id: "r4", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r4", ...POS.center, route: "hitch", side: "right", isCenter: true },
       { id: "r5", ...POS.farRight, route: "post", side: "right" },
     ],
   },
@@ -216,7 +216,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "drag", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "dig", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "drag", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "go", side: "right" },
       { id: "r5", ...POS.farRight, route: "curl", side: "right" },
     ],
@@ -235,7 +235,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "cross", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "go", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "drag", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "cross", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
@@ -252,7 +252,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.left, route: "dig", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "post", side: "right" },
       { id: "r5", ...POS.farRight, route: "out", side: "right" },
     ],
@@ -269,7 +269,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "cross", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "corner", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "drag", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "corner", side: "right" },
       { id: "r5", ...POS.farRight, route: "cross", side: "right" },
     ],
@@ -286,7 +286,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.left, route: "slant", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "go", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "slant", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "go", side: "right" },
       { id: "r5", ...POS.right, route: "slant", side: "right" },
     ],
@@ -302,7 +302,7 @@ export const PRESET_PLAYS: Play[] = [
     tags: ["deep"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "post", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "drag", side: "right", isCenter: true },
       { id: "r3", ...POS.slotRight, route: "in", side: "right" },
       { id: "r4", ...POS.right, route: "go", side: "right" },
       { id: "r5", ...POS.backfieldRight, route: "wheel", side: "right" },
@@ -320,7 +320,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "dig", side: "left" },
       { id: "r2", ...POS.left, route: "drag", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "drag", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "go", side: "right" },
       { id: "r5", ...POS.farRight, route: "corner", side: "right" },
     ],
@@ -337,7 +337,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "drag", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "drag", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "drag", side: "right" },
       { id: "r5", ...POS.farRight, route: "out", side: "right" },
     ],
@@ -353,7 +353,7 @@ export const PRESET_PLAYS: Play[] = [
     tags: ["short"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "hitch", side: "right", isCenter: true },
       { id: "r3", x: 60, y: 4, route: "slant", side: "right" },
       { id: "r4", x: 68, y: 4, route: "out", side: "right" },
       { id: "r5", x: 76, y: 4, route: "slant", side: "right" },
@@ -371,7 +371,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "post", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "out", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "hitch", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "in", side: "right" },
       { id: "r5", ...POS.farRight, route: "post", side: "right" },
     ],
@@ -388,7 +388,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "corner", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "go", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "corner", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
@@ -404,7 +404,7 @@ export const PRESET_PLAYS: Play[] = [
     tags: ["deep", "trick"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "in", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "hitch", side: "right", isCenter: true },
       { id: "r3", ...POS.slotRight, route: "go", side: "right" },
       { id: "r4", ...POS.right, route: "go", side: "right" },
       { id: "r5", ...POS.farRight, route: "out", side: "right" },
@@ -422,7 +422,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", x: 22, y: 4, route: "go", side: "left" },
       { id: "r2", x: 36, y: 4, route: "flat", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "hitch", side: "right", isCenter: true },
       { id: "r4", x: 64, y: 4, route: "flat", side: "right" },
       { id: "r5", x: 78, y: 4, route: "go", side: "right" },
     ],
@@ -443,7 +443,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.left, route: "block", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "block", side: "right" },
       { id: "r5", ...POS.farRight, route: "block", side: "right" },
     ],
@@ -461,7 +461,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.left, route: "block", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "block", side: "right" },
       { id: "r5", ...POS.backfield, route: "dive", side: "right", isRunner: true },
     ],
@@ -479,7 +479,7 @@ export const PRESET_PLAYS: Play[] = [
     motion: { receiverId: "r4", toX: 50, toY: 8 },
     receivers: [
       { id: "r1", ...POS.farLeft, route: "block", side: "left" },
-      { id: "r2", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r2", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r3", ...POS.slotRight, route: "block", side: "right" },
       { id: "r4", ...POS.farRight, route: "sweep", side: "left", isRunner: true },
       { id: "r5", ...POS.backfield, route: "block", side: "right" },
@@ -498,7 +498,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "block", side: "left" },
       { id: "r2", ...POS.left, route: "block", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "block", side: "right" },
       { id: "r5", ...POS.backfield, route: "counter", side: "right", isRunner: true },
     ],
@@ -517,7 +517,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.left, route: "go", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.right, route: "go", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
@@ -536,7 +536,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "block", side: "left" },
       { id: "r2", ...POS.left, route: "block", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
       { id: "r4", ...POS.farRight, route: "block", side: "right" },
       { id: "r5", ...POS.backfieldRight, route: "sweep", side: "left", isRunner: true },
     ],
