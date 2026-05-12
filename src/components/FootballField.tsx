@@ -111,6 +111,35 @@ function routeSvgPoints(
       move(lateral(sgn * 14), downfield(2));
       move(lateral(sgn * 6), downfield(28));
       break;
+    // Center-specialty short routes
+    case "shovel":
+      move(lateral(sgn * 6), downfield(-2));
+      break;
+    case "stick":
+      move(0, downfield(3));
+      move(lateral(sgn * 6), 0);
+      break;
+    case "sneak":
+      move(0, downfield(3));
+      break;
+    case "pivot":
+      move(0, downfield(3));
+      move(lateral(-sgn * 5), downfield(1));
+      break;
+    case "leak":
+      move(0, downfield(1));
+      move(lateral(sgn * 10), downfield(3));
+      break;
+    case "sit":
+      move(0, downfield(4));
+      break;
+    case "chip":
+      move(0, downfield(1));
+      move(lateral(sgn * 10), downfield(2));
+      break;
+    case "rub":
+      move(lateral(-sgn * 8), downfield(2));
+      break;
     case "block":
       // No real path; drawn separately as a block mark
       move(0, 0);
