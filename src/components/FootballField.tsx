@@ -529,6 +529,11 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
           plen += Math.sqrt(dx * dx + dy * dy);
         }
 
+        // Animation duration scales with route length so deep routes take longer.
+        const dur = Math.min(2.4, Math.max(0.55, plen / 28));
+        // Approximate yardage at the end (downfield from LOS, in yards).
+        const endYds = Math.max(0, Math.round((LOS - end[1]) / SCALE));
+
         return (
           <g key={`${r.id}-${animateKey}`}>
             <path
@@ -541,7 +546,10 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
               strokeLinejoin="round"
               markerEnd={isRunner ? "url(#run-arrow)" : `url(#arrow-${i % 5})`}
               className={animate && !isRunner ? "route-animate" : undefined}
-              style={animate && !isRunner ? ({ ["--route-len" as unknown as string]: plen.toFixed(1) } as React.CSSProperties) : undefined}
+              style={animate && !isRunner ? ({
+                ["--route-len" as unknown as string]: plen.toFixed(1),
+                ["--route-dur" as unknown as string]: `${dur.toFixed(2)}s`,
+              } as React.CSSProperties) : undefined}
             />
             <circle
               cx={start[0]}
