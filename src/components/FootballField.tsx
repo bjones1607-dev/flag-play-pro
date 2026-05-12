@@ -593,6 +593,25 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
                 {r.route.toUpperCase()}
               </text>
             )}
+            {showLabels && big && !isRunner && r.route !== "block" && endYds > 0 && (
+              <text
+                x={end[0]}
+                y={labelY + 2.4}
+                textAnchor="middle"
+                fontSize={2}
+                fill="var(--chalk)"
+                opacity="0.85"
+                style={{
+                  paintOrder: "stroke",
+                  stroke: "rgba(0,0,0,0.7)",
+                  strokeWidth: 0.4,
+                  pointerEvents: "none",
+                }}
+                fontFamily="var(--font-display)"
+              >
+                {endYds}YD
+              </text>
+            )}
             {showLabels && isRunner && (
               <text
                 x={end[0]}
