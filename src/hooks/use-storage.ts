@@ -79,3 +79,13 @@ export function useRecentCalls(): RecentCall[] {
   }, []);
   return v;
 }
+
+export function useSituation(): [Situation, (s: Situation) => void] {
+  const [v, setV] = useState<Situation>(() => loadSituation());
+  useEffect(() => {
+    setV(loadSituation());
+    return subscribe([EVENTS.SITUATION], () => setV(loadSituation()));
+  }, []);
+  const set = (s: Situation) => { saveSituation(s); setV(s); };
+  return [v, set];
+}
