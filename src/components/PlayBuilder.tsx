@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Play, ReceiverRoute, RouteType, DefenseType, PlayTag, PlayType } from "@/lib/types";
-import { ALL_ROUTES, ALL_TAGS, RUN_ROUTES, ROUTE_LABELS, TAG_LABELS } from "@/lib/routes";
+import { ALL_ROUTES, ALL_TAGS, RUN_ROUTES, ROUTE_LABELS, TAG_LABELS, CENTER_ROUTES, CENTER_ROUTE_TIPS } from "@/lib/routes";
 
 const RUN_SET = new Set<RouteType>(RUN_ROUTES);
 import { Button } from "@/components/ui/button";
@@ -308,14 +308,50 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
           <span className="text-[10px] text-muted-foreground ml-1">+ QB = {count + 1}</span>
         </div>
 
+        {centerIdx >= 0 && centerIdx < count && (
+          <div className="space-y-2 rounded-lg border border-foreground/30 bg-foreground/5 p-2">
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-display tracking-widest text-foreground">
+                CENTER ROUTE · R{centerIdx + 1}
+              </div>
+              <span className="text-[9px] font-display tracking-wider text-muted-foreground">
+                SHORT RELEASES
+              </span>
+            </div>
+            <Select
+              value={routes[centerIdx] ?? "delay"}
+              onValueChange={(v) => setRouteAt(centerIdx, v as RouteType)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CENTER_ROUTES.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {ROUTE_LABELS[r]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {CENTER_ROUTE_TIPS[routes[centerIdx]] && (
+              <p className="text-[10px] leading-snug text-muted-foreground italic">
+                {CENTER_ROUTE_TIPS[routes[centerIdx]]}
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-2">
           {Array.from({ length: count }).map((_, i) => {
             const isRunner = playType === "run" && runnerIdx === i;
             const isCenter = centerIdx === i;
+            const slotRoutes: RouteType[] = isCenter ? CENTER_ROUTES : ALL_ROUTES;
             return (
               <div key={i} className="space-y-1">
                 <div className="flex items-center justify-between gap-1">
-                  <label className="text-xs font-display text-muted-foreground">R{i + 1}</label>
+                  <label className="text-xs font-display text-muted-foreground">
+                    {isCenter ? "C" : `R${i + 1}`}
+                  </label>
                   <div className="flex gap-1">
                     {playType === "run" && (
                       <button
@@ -332,10 +368,16 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
                     )}
                     <button
                       type="button"
-                      onClick={() => setCenterIdx(isCenter ? -1 : i)}
+                      onClick={() => {
+                        const becoming = !isCenter;
+                        setCenterIdx(isCenter ? -1 : i);
+                        if (becoming && !CENTER_ROUTES.includes(routes[i])) {
+                          setRouteAt(i, "delay");
+                        }
+                      }}
                       className={`text-[9px] px-1.5 py-0.5 rounded font-display tracking-wider ${
                         isCenter
-                          ? "bg-chalk text-field-deep bg-foreground text-background"
+                          ? "bg-foreground text-background"
                           : "bg-secondary text-muted-foreground"
                       }`}
                     >
@@ -351,7 +393,7 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {availableRoutes.map((r) => (
+                    {slotRoutes.map((r) => (
                       <SelectItem key={r} value={r}>
                         {ROUTE_LABELS[r]}
                       </SelectItem>
