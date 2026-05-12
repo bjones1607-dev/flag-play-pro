@@ -39,7 +39,7 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
         name: "",
         count: 5,
         positions: SLOT_PRESETS.map((p) => ({ x: p.x, y: p.y })),
-        routes: ["go", "slant", "block", "out", "flat"] as RouteType[],
+        routes: ["go", "slant", "delay", "out", "flat"] as RouteType[],
         runnerIdx: -1,
         centerIdx: 2,
         qb: { x: 50, y: 12 },
@@ -53,7 +53,7 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
       };
     }
     const positions = SLOT_PRESETS.map((p) => ({ x: p.x, y: p.y }));
-    const routes: RouteType[] = ["go", "slant", "block", "out", "flat"] as RouteType[];
+    const routes: RouteType[] = ["go", "slant", "delay", "out", "flat"] as RouteType[];
     let runnerIdx = -1;
     let centerIdx = -1;
     initial.receivers.forEach((r, i) => {
