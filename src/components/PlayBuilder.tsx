@@ -248,7 +248,7 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
 
         <div className="grid grid-cols-2 gap-2">
           <button
-            onClick={() => setPlayType("pass")}
+            onClick={() => { setPlayType("pass"); setRunnerIdx(-1); setQbAction("pass"); }}
             className={`py-2 rounded-md font-display tracking-wide text-sm transition ${
               playType === "pass"
                 ? "bg-primary text-primary-foreground"
@@ -258,7 +258,11 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
             PASS PLAY
           </button>
           <button
-            onClick={() => setPlayType("run")}
+            onClick={() => {
+              setPlayType("run");
+              // Sensible default: if no runner selected, set QB keep-right
+              if (runnerIdx < 0 && qbAction === "pass") setQbAction("keep-right");
+            }}
             className={`py-2 rounded-md font-display tracking-wide text-sm transition ${
               playType === "run"
                 ? "bg-primary text-primary-foreground"
