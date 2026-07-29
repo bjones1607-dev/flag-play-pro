@@ -5,6 +5,7 @@ import { PRESET_PLAYS } from "@/lib/plays";
 import { KID_RULES, PLAYSHEET_SECTIONS, QB_GOLDEN_RULE } from "@/lib/playsheet";
 import { FootballField } from "@/components/FootballField";
 import { HuddleView } from "@/components/HuddleView";
+import { LineupSwitcher } from "@/components/LineupSwitcher";
 import { useAssignment, useFavorites, usePlayers } from "@/hooks/use-storage";
 import { Button } from "@/components/ui/button";
 import { Home, Printer, Tv } from "lucide-react";
@@ -107,6 +108,9 @@ function Playsheet() {
           <span className="block text-[11px] text-primary mt-1.5 no-print">
             Tap any play to show it to the kids fullscreen — routes animate, swipe for next play.
           </span>
+          <div className="mt-2 flex justify-center no-print">
+            <LineupSwitcher />
+          </div>
         </div>
 
         {/* Kid rules */}

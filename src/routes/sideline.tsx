@@ -4,6 +4,7 @@ import type { DefenseType, Play } from "@/lib/types";
 import { PRESET_PLAYS } from "@/lib/plays";
 import { FootballField } from "@/components/FootballField";
 import { SituationBar, SITUATION_PRESETS } from "@/components/SituationBar";
+import { LineupSwitcher } from "@/components/LineupSwitcher";
 import { useAssignment, useCustomPlays, useFavorites, usePlayers, useRecentCalls, useSituation } from "@/hooks/use-storage";
 import { pushRecentCall, saveRecentCalls, tagLastCall } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
@@ -145,13 +146,14 @@ function Sideline() {
           </button>
         </div>
 
-        <div className="px-4 pb-3 no-print">
+        <div className="px-4 pb-3 no-print space-y-2">
           <SituationBar
             situation={situation}
             onChange={setSituation}
             activePreset={activePreset}
             onPreset={setActivePreset}
           />
+          <LineupSwitcher />
         </div>
       </header>
 
