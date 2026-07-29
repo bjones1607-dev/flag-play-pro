@@ -634,6 +634,49 @@ export const PRESET_PLAYS: Play[] = [
     ],
   },
 
+  {
+    id: "zb-secret-agent",
+    name: "Secret Agent",
+    defense: "zone",
+    qb: QB,
+    formation: "Doubles",
+    purpose:
+      "Nobody covers the snapper. The Pizza shell (flats + hitches) drags the three short defenders apart — then the center pops into the vacated middle at 8 yards.",
+    keyRead:
+      "Look at a flat first to move the defense, then hit your secret agent popping open in the middle.",
+    notes:
+      "Call this right after Pizza has them jumping the flats. Center: snap, count 'one-two', then BURST to 8 yards and turn around — expect the ball.",
+    tags: ["short", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "hitch", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "flat", side: "left" },
+      { id: "r3", ...POS.center, route: "pop", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "flat", side: "right" },
+      { id: "r5", ...POS.farRight, route: "hitch", side: "right" },
+    ],
+  },
+  {
+    id: "zb-periscope",
+    name: "Periscope",
+    defense: "zone",
+    qb: QB,
+    formation: "Spread",
+    purpose:
+      "The deep shot nobody sees: gos occupy the deep outside thirds, outs hold the short defenders wide, and the center periscopes up the empty middle pipe.",
+    keyRead:
+      "Pump the out to freeze the short middle, then launch the periscope up the pipe. Watch the deep middle defender — throw in front of him if he backs up.",
+    notes:
+      "Center: sell the sit for one count, then take off up the seam. QB: big drop, bravest throw in the book — rep it in practice before you call it.",
+    tags: ["deep", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "go", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "out", side: "left" },
+      { id: "r3", ...POS.center, route: "seam", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "out", side: "right" },
+      { id: "r5", ...POS.farRight, route: "go", side: "right" },
+    ],
+  },
+
   // ----- Desperation tricks (down late, need a miracle) -----
   {
     id: "zb-hook-ladder",

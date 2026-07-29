@@ -140,6 +140,15 @@ function routeSvgPoints(
     case "rub":
       move(lateral(-sgn * 8), downfield(2));
       break;
+    case "pop":
+      // Burst into the window behind the short middle defender.
+      move(0, downfield(8));
+      break;
+    case "seam":
+      // Vertical bender up the empty middle pipe between the deep thirds.
+      move(0, downfield(6));
+      move(lateral(sgn * 5), downfield(30));
+      break;
     case "block":
       // No real path; drawn separately as a block mark
       move(0, 0);
@@ -161,7 +170,17 @@ function routeSvgPoints(
 }
 
 export const FootballField = forwardRef<FootballFieldHandle, Props>(function FootballField(
-  { play, assignment = {}, players = [], showLabels = true, big = false, animate = false, animateKey = 0, onReceiverMove, onQbMove },
+  {
+    play,
+    assignment = {},
+    players = [],
+    showLabels = true,
+    big = false,
+    animate = false,
+    animateKey = 0,
+    onReceiverMove,
+    onQbMove,
+  },
   ref,
 ) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -546,10 +565,14 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
               strokeLinejoin="round"
               markerEnd={isRunner ? "url(#run-arrow)" : `url(#arrow-${i % 5})`}
               className={animate && !isRunner ? "route-animate" : undefined}
-              style={animate && !isRunner ? ({
-                ["--route-len" as unknown as string]: plen.toFixed(1),
-                ["--route-dur" as unknown as string]: `${dur.toFixed(2)}s`,
-              } as React.CSSProperties) : undefined}
+              style={
+                animate && !isRunner
+                  ? ({
+                      ["--route-len" as unknown as string]: plen.toFixed(1),
+                      ["--route-dur" as unknown as string]: `${dur.toFixed(2)}s`,
+                    } as React.CSSProperties)
+                  : undefined
+              }
             />
             <circle
               cx={start[0]}

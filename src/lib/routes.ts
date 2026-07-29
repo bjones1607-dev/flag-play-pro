@@ -29,25 +29,44 @@ export const ROUTE_LABELS: Record<RouteType, string> = {
   sit: "Sit (Soft Spot)",
   chip: "Chip & Release",
   rub: "Rub / Pick",
+  pop: "Pop (8yd Middle)",
+  seam: "Seam (Deep Pipe)",
 };
 
-// Short, center-friendly release routes for the snapper in 6v6 flag football.
-// Every option keeps the center within ~5 yards of the LOS so the QB has a quick checkdown.
+// Center route options. League rule: the snapper is a fully eligible
+// receiver after the snap, and zones routinely forget him — so he gets the
+// quick outlets first, the zone-exploit middle routes next, and then the
+// full route tree for complete customization.
 export const CENTER_ROUTES: RouteType[] = [
+  // Quick outlets
+  "sit",
+  "sneak",
   "shovel",
   "stick",
-  "sneak",
   "pivot",
   "leak",
-  "sit",
   "chip",
   "rub",
   "delay",
+  // Zone exploits up the middle
+  "pop",
+  "seam",
+  // Full tree
   "drag",
   "swing",
   "flat",
   "hitch",
   "screen",
+  "slant",
+  "curl",
+  "in",
+  "out",
+  "cross",
+  "dig",
+  "corner",
+  "post",
+  "go",
+  "wheel",
 ];
 
 export const CENTER_ROUTE_TIPS: Partial<Record<RouteType, string>> = {
@@ -65,7 +84,8 @@ export const CENTER_ROUTE_TIPS: Partial<Record<RouteType, string>> = {
   flat: "Snap, attack flat — outlet vs all-out blitz",
   hitch: "Snap, 4yd, snap back to QB",
   screen: "Snap, set up bubble screen behind LOS",
-  block: "Snap, set in front of QB — protect, no route",
+  pop: "Snap, count '1-2', BURST to 8yd behind the middle defender — zones forget the snapper",
+  seam: "Snap, sell short for a count, then take off up the empty middle pipe — the deep shot nobody sees",
 };
 
 export const PASS_ROUTES: PassRoute[] = [
