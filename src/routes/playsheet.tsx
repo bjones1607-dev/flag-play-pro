@@ -8,7 +8,7 @@ import { HuddleView } from "@/components/HuddleView";
 import { LineupSwitcher } from "@/components/LineupSwitcher";
 import { useAssignment, useFavorites, usePlayers } from "@/hooks/use-storage";
 import { Button } from "@/components/ui/button";
-import { Home, Printer, Tv } from "lucide-react";
+import { Home, Printer } from "lucide-react";
 
 export const Route = createFileRoute("/playsheet")({
   head: () => ({
@@ -63,12 +63,6 @@ function Playsheet() {
             </p>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <Link to="/sideline">
-              <Button variant="secondary" size="sm" className="gap-1.5">
-                <Tv className="h-4 w-4" />
-                <span className="font-display text-xs hidden sm:inline">SIDELINE</span>
-              </Button>
-            </Link>
             <Button size="sm" className="gap-1.5" onClick={() => window.print()}>
               <Printer className="h-4 w-4" />
               <span className="font-display text-xs">PRINT SHEET</span>

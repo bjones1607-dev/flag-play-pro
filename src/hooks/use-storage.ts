@@ -7,6 +7,7 @@ import {
   loadAssignment,
   loadCallLog,
   loadCustomPlays,
+  loadDrives,
   loadFavorites,
   loadGameStart,
   loadLineups,
@@ -18,6 +19,7 @@ import {
   saveSituation,
   updateLineupFromCurrent,
   type CallLogEntry,
+  type DriveState,
   type Lineup,
   type RecentCall,
   type Situation,
@@ -130,6 +132,15 @@ export function useCallLog(): { log: CallLogEntry[]; gameStart: number } {
     return subscribe([EVENTS.CALLLOG], refresh);
   }, []);
   return { log, gameStart };
+}
+
+export function useDrives(): DriveState {
+  const [v, setV] = useState<DriveState>({ drives: [], current: { plays: 0, yards: 0 } });
+  useEffect(() => {
+    setV(loadDrives());
+    return subscribe([EVENTS.DRIVES], () => setV(loadDrives()));
+  }, []);
+  return v;
 }
 
 export function useSituation(): [Situation, (s: Situation) => void] {

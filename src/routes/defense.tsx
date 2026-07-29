@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { DEF_KID_RULES, DEFENSIVE_CALLS } from "@/lib/defense";
 import { DefenseField } from "@/components/DefenseField";
 import { Button } from "@/components/ui/button";
-import { Home, Printer, Shield, Tv } from "lucide-react";
+import { Home, Printer, Shield } from "lucide-react";
 
 export const Route = createFileRoute("/defense")({
   head: () => ({
@@ -37,12 +37,6 @@ function Defense() {
             </p>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <Link to="/sideline">
-              <Button variant="secondary" size="sm" className="gap-1.5">
-                <Tv className="h-4 w-4" />
-                <span className="font-display text-xs hidden sm:inline">SIDELINE</span>
-              </Button>
-            </Link>
             <Button size="sm" className="gap-1.5" onClick={() => window.print()}>
               <Printer className="h-4 w-4" />
               <span className="font-display text-xs">PRINT</span>

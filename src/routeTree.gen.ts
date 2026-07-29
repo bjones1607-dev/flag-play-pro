@@ -11,9 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WristbandRouteImport } from './routes/wristband'
 import { Route as StatsRouteImport } from './routes/stats'
-import { Route as SidelineRouteImport } from './routes/sideline'
 import { Route as PracticeRouteImport } from './routes/practice'
 import { Route as PlaysheetRouteImport } from './routes/playsheet'
+import { Route as HalftimeRouteImport } from './routes/halftime'
 import { Route as DesignerRouteImport } from './routes/designer'
 import { Route as DefenseRouteImport } from './routes/defense'
 import { Route as IndexRouteImport } from './routes/index'
@@ -28,11 +28,6 @@ const StatsRoute = StatsRouteImport.update({
   path: '/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SidelineRoute = SidelineRouteImport.update({
-  id: '/sideline',
-  path: '/sideline',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PracticeRoute = PracticeRouteImport.update({
   id: '/practice',
   path: '/practice',
@@ -41,6 +36,11 @@ const PracticeRoute = PracticeRouteImport.update({
 const PlaysheetRoute = PlaysheetRouteImport.update({
   id: '/playsheet',
   path: '/playsheet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HalftimeRoute = HalftimeRouteImport.update({
+  id: '/halftime',
+  path: '/halftime',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DesignerRoute = DesignerRouteImport.update({
@@ -63,9 +63,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/defense': typeof DefenseRoute
   '/designer': typeof DesignerRoute
+  '/halftime': typeof HalftimeRoute
   '/playsheet': typeof PlaysheetRoute
   '/practice': typeof PracticeRoute
-  '/sideline': typeof SidelineRoute
   '/stats': typeof StatsRoute
   '/wristband': typeof WristbandRoute
 }
@@ -73,9 +73,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/defense': typeof DefenseRoute
   '/designer': typeof DesignerRoute
+  '/halftime': typeof HalftimeRoute
   '/playsheet': typeof PlaysheetRoute
   '/practice': typeof PracticeRoute
-  '/sideline': typeof SidelineRoute
   '/stats': typeof StatsRoute
   '/wristband': typeof WristbandRoute
 }
@@ -84,9 +84,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/defense': typeof DefenseRoute
   '/designer': typeof DesignerRoute
+  '/halftime': typeof HalftimeRoute
   '/playsheet': typeof PlaysheetRoute
   '/practice': typeof PracticeRoute
-  '/sideline': typeof SidelineRoute
   '/stats': typeof StatsRoute
   '/wristband': typeof WristbandRoute
 }
@@ -96,9 +96,9 @@ export interface FileRouteTypes {
     | '/'
     | '/defense'
     | '/designer'
+    | '/halftime'
     | '/playsheet'
     | '/practice'
-    | '/sideline'
     | '/stats'
     | '/wristband'
   fileRoutesByTo: FileRoutesByTo
@@ -106,9 +106,9 @@ export interface FileRouteTypes {
     | '/'
     | '/defense'
     | '/designer'
+    | '/halftime'
     | '/playsheet'
     | '/practice'
-    | '/sideline'
     | '/stats'
     | '/wristband'
   id:
@@ -116,9 +116,9 @@ export interface FileRouteTypes {
     | '/'
     | '/defense'
     | '/designer'
+    | '/halftime'
     | '/playsheet'
     | '/practice'
-    | '/sideline'
     | '/stats'
     | '/wristband'
   fileRoutesById: FileRoutesById
@@ -127,9 +127,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DefenseRoute: typeof DefenseRoute
   DesignerRoute: typeof DesignerRoute
+  HalftimeRoute: typeof HalftimeRoute
   PlaysheetRoute: typeof PlaysheetRoute
   PracticeRoute: typeof PracticeRoute
-  SidelineRoute: typeof SidelineRoute
   StatsRoute: typeof StatsRoute
   WristbandRoute: typeof WristbandRoute
 }
@@ -150,13 +150,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sideline': {
-      id: '/sideline'
-      path: '/sideline'
-      fullPath: '/sideline'
-      preLoaderRoute: typeof SidelineRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/practice': {
       id: '/practice'
       path: '/practice'
@@ -169,6 +162,13 @@ declare module '@tanstack/react-router' {
       path: '/playsheet'
       fullPath: '/playsheet'
       preLoaderRoute: typeof PlaysheetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/halftime': {
+      id: '/halftime'
+      path: '/halftime'
+      fullPath: '/halftime'
+      preLoaderRoute: typeof HalftimeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/designer': {
@@ -199,9 +199,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DefenseRoute: DefenseRoute,
   DesignerRoute: DesignerRoute,
+  HalftimeRoute: HalftimeRoute,
   PlaysheetRoute: PlaysheetRoute,
   PracticeRoute: PracticeRoute,
-  SidelineRoute: SidelineRoute,
   StatsRoute: StatsRoute,
   WristbandRoute: WristbandRoute,
 }
