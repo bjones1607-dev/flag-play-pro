@@ -14,6 +14,7 @@ import { Route as StatsRouteImport } from './routes/stats'
 import { Route as SidelineRouteImport } from './routes/sideline'
 import { Route as PracticeRouteImport } from './routes/practice'
 import { Route as PlaysheetRouteImport } from './routes/playsheet'
+import { Route as DesignerRouteImport } from './routes/designer'
 import { Route as DefenseRouteImport } from './routes/defense'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -42,6 +43,11 @@ const PlaysheetRoute = PlaysheetRouteImport.update({
   path: '/playsheet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DesignerRoute = DesignerRouteImport.update({
+  id: '/designer',
+  path: '/designer',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DefenseRoute = DefenseRouteImport.update({
   id: '/defense',
   path: '/defense',
@@ -56,6 +62,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/defense': typeof DefenseRoute
+  '/designer': typeof DesignerRoute
   '/playsheet': typeof PlaysheetRoute
   '/practice': typeof PracticeRoute
   '/sideline': typeof SidelineRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/defense': typeof DefenseRoute
+  '/designer': typeof DesignerRoute
   '/playsheet': typeof PlaysheetRoute
   '/practice': typeof PracticeRoute
   '/sideline': typeof SidelineRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/defense': typeof DefenseRoute
+  '/designer': typeof DesignerRoute
   '/playsheet': typeof PlaysheetRoute
   '/practice': typeof PracticeRoute
   '/sideline': typeof SidelineRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/defense'
+    | '/designer'
     | '/playsheet'
     | '/practice'
     | '/sideline'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/defense'
+    | '/designer'
     | '/playsheet'
     | '/practice'
     | '/sideline'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/defense'
+    | '/designer'
     | '/playsheet'
     | '/practice'
     | '/sideline'
@@ -114,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DefenseRoute: typeof DefenseRoute
+  DesignerRoute: typeof DesignerRoute
   PlaysheetRoute: typeof PlaysheetRoute
   PracticeRoute: typeof PracticeRoute
   SidelineRoute: typeof SidelineRoute
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlaysheetRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/designer': {
+      id: '/designer'
+      path: '/designer'
+      fullPath: '/designer'
+      preLoaderRoute: typeof DesignerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/defense': {
       id: '/defense'
       path: '/defense'
@@ -178,6 +198,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DefenseRoute: DefenseRoute,
+  DesignerRoute: DesignerRoute,
   PlaysheetRoute: PlaysheetRoute,
   PracticeRoute: PracticeRoute,
   SidelineRoute: SidelineRoute,

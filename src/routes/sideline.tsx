@@ -101,14 +101,25 @@ function Sideline() {
     toast.success(`Called: ${p.name}`);
   };
 
-  // Quick yards: record on the last call and walk the ball forward/back.
+  // Quick yards run the game: record yards on the last call, move the ball,
+  // then handle first downs (crossing midfield), next down, or turnover.
   const recordYards = (y: number) => {
     setYardsOnLastCall(y);
-    setSituation({
-      ...situation,
-      yardLine: Math.max(1, Math.min(49, situation.yardLine + y)),
-    });
-    toast(`${y > 0 ? "+" : ""}${y} yds on ${recent[0]?.name ?? "last call"}`);
+    const newYard = Math.max(1, Math.min(49, situation.yardLine + y));
+    if (situation.series === "to-mid" && newYard >= 25) {
+      toast.success("FIRST DOWN — 4 downs to score!");
+      setSituation({ ...situation, series: "to-score", down: 1, yardLine: newYard });
+      return;
+    }
+    const md = situation.series === "to-mid" ? 3 : 4;
+    const next = situation.down + 1;
+    if (next > md) {
+      toast("Turnover on downs — their ball");
+      setSituation({ ...situation, series: "to-mid", down: 1, yardLine: 5 });
+    } else {
+      setSituation({ ...situation, down: next as 1 | 2 | 3 | 4, yardLine: newYard });
+      toast(`${y > 0 ? "+" : ""}${y} yds · down ${next}`);
+    }
   };
   const recordTouchdown = () => {
     setYardsOnLastCall(50 - situation.yardLine);
@@ -121,37 +132,6 @@ function Sideline() {
       down: 1,
       yardLine: 5,
     });
-  };
-
-  const advanceDown = (good: boolean) => {
-    if (good) {
-      if (situation.series === "to-score") {
-        toast.success("TOUCHDOWN — +6");
-        setSituation({
-          ...situation,
-          ourScore: situation.ourScore + 6,
-          series: "to-mid",
-          down: 1,
-          yardLine: 5,
-        });
-      } else {
-        setSituation({
-          ...situation,
-          series: "to-score",
-          down: 1,
-          yardLine: Math.max(situation.yardLine, 25),
-        });
-      }
-      return;
-    }
-    const md = situation.series === "to-mid" ? 3 : 4;
-    const next = situation.down + 1;
-    if (next > md) {
-      toast("Turnover on downs — reset");
-      setSituation({ ...situation, series: "to-mid", down: 1, yardLine: 5 });
-    } else {
-      setSituation({ ...situation, down: next as 1 | 2 | 3 | 4 });
-    }
   };
 
   return (
@@ -388,44 +368,48 @@ function Sideline() {
                           </span>
                         )}
                       </div>
+                      {/* Quality tags only — the yard chips below run the downs */}
                       <Button
                         size="sm"
+                        variant="secondary"
                         onClick={() => {
                           tagLastCall("good");
-                          advanceDown(true);
+                          toast.success("Tagged: worked");
                         }}
+                        aria-label="Tag play as worked"
                       >
-                        <ThumbsUp className="h-4 w-4 mr-1.5" /> GOOD
+                        <ThumbsUp className="h-4 w-4" />
                       </Button>
                       <Button
                         size="sm"
                         variant="secondary"
                         onClick={() => {
                           tagLastCall("bad");
-                          advanceDown(false);
-                          toast("Marked bad — next down");
+                          toast("Tagged: didn't work");
                         }}
+                        aria-label="Tag play as didn't work"
                       >
-                        <ThumbsDown className="h-4 w-4 mr-1.5" /> NO GAIN
+                        <ThumbsDown className="h-4 w-4" />
                       </Button>
                     </div>
-                    {/* Quick yards gained — feeds the stats page and moves the ball */}
+                    {/* One tap per snap: records yards, moves the ball, advances the
+                        down, awards the first down at midfield, or turns it over. */}
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">
-                        Yds
+                        Result
                       </span>
                       {[-3, 0, 3, 5, 8, 12, 20].map((y) => (
                         <button
                           key={y}
                           onClick={() => recordYards(y)}
-                          className="text-[11px] px-2.5 py-1.5 rounded-full font-display tracking-wider bg-secondary text-muted-foreground hover:bg-secondary/70 active:scale-95 transition"
+                          className="text-sm px-3 py-2 rounded-lg font-display tracking-wider bg-secondary text-foreground hover:bg-secondary/70 active:scale-95 transition"
                         >
                           {y > 0 ? `+${y}` : y}
                         </button>
                       ))}
                       <button
                         onClick={recordTouchdown}
-                        className="text-[11px] px-2.5 py-1.5 rounded-full font-display tracking-wider bg-primary text-primary-foreground active:scale-95 transition"
+                        className="text-sm px-3 py-2 rounded-lg font-display tracking-wider bg-primary text-primary-foreground active:scale-95 transition"
                       >
                         TD
                       </button>
