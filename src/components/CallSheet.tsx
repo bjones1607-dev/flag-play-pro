@@ -1,7 +1,15 @@
 import { useMemo, useState } from "react";
-import type { Play } from "@/lib/types";
+import type { Play, Player, PlayerAssignment } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { FootballField } from "@/components/FootballField";
 import { ClipboardList, Printer, Trash2, ThumbsUp, ThumbsDown, Star } from "lucide-react";
 import { useFavorites, useRecentCalls } from "@/hooks/use-storage";
 import { pushRecentCall, saveRecentCalls, tagLastCall } from "@/lib/storage";
@@ -11,9 +19,11 @@ interface Props {
   plays: Play[];
   onSelect: (id: string) => void;
   onShowHuddle: () => void;
+  assignment?: PlayerAssignment;
+  players?: Player[];
 }
 
-export function CallSheet({ plays, onSelect, onShowHuddle }: Props) {
+export function CallSheet({ plays, onSelect, onShowHuddle, assignment = {}, players = [] }: Props) {
   const [open, setOpen] = useState(false);
   const favorites = useFavorites();
   const recent = useRecentCalls();
@@ -49,7 +59,7 @@ export function CallSheet({ plays, onSelect, onShowHuddle }: Props) {
           <span className="font-display text-sm hidden sm:inline">CALL SHEET</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[95vw] sm:w-[520px] overflow-y-auto">
+      <SheetContent side="right" className="w-[95vw] sm:w-[640px] sm:max-w-[640px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="font-display text-2xl flex items-center justify-between">
             <span>Game Day Call Sheet</span>
@@ -61,7 +71,8 @@ export function CallSheet({ plays, onSelect, onShowHuddle }: Props) {
             </button>
           </SheetTitle>
           <SheetDescription className="sr-only">
-            Numbered call sheet for game day. Tap a play to call it and open the huddle view.
+            Visual call sheet for game day. Scroll the play diagrams and tap one to call it and
+            expand it fullscreen for the huddle.
           </SheetDescription>
         </SheetHeader>
 
@@ -73,7 +84,10 @@ export function CallSheet({ plays, onSelect, onShowHuddle }: Props) {
             </div>
             {recent.length > 0 && (
               <button
-                onClick={() => { saveRecentCalls([]); toast("Cleared"); }}
+                onClick={() => {
+                  saveRecentCalls([]);
+                  toast("Cleared");
+                }}
                 className="text-[10px] text-muted-foreground hover:text-destructive flex items-center gap-1"
               >
                 <Trash2 className="h-3 w-3" /> Clear
@@ -81,25 +95,46 @@ export function CallSheet({ plays, onSelect, onShowHuddle }: Props) {
             )}
           </div>
           {recent.length === 0 ? (
-            <div className="text-xs text-muted-foreground italic py-2">No calls yet — tap a play to call it.</div>
+            <div className="text-xs text-muted-foreground italic py-2">
+              No calls yet — tap a play to call it.
+            </div>
           ) : (
             <div className="space-y-1">
-              {recent.slice(0, 6).map((r, i) => (
-                <div key={r.at}
+              {recent.slice(0, 4).map((r, i) => (
+                <div
+                  key={r.at}
                   className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-sm border ${
-                    r.result === "good" ? "border-primary/40 bg-primary/5" :
-                    r.result === "bad" ? "border-destructive/40 bg-destructive/5" :
-                    "border-border bg-secondary/40"}`}>
-                  <span className="text-[10px] text-muted-foreground w-6 font-display">#{recent.length - i}</span>
+                    r.result === "good"
+                      ? "border-primary/40 bg-primary/5"
+                      : r.result === "bad"
+                        ? "border-destructive/40 bg-destructive/5"
+                        : "border-border bg-secondary/40"
+                  }`}
+                >
+                  <span className="text-[10px] text-muted-foreground w-6 font-display">
+                    #{recent.length - i}
+                  </span>
                   <span className="flex-1 truncate font-display tracking-wide">{r.name}</span>
                   {i === 0 && (
                     <>
-                      <button onClick={() => { tagLastCall("good"); toast.success("Marked good"); }}
-                        className="p-1 rounded hover:bg-primary/20" aria-label="Good">
+                      <button
+                        onClick={() => {
+                          tagLastCall("good");
+                          toast.success("Marked good");
+                        }}
+                        className="p-1 rounded hover:bg-primary/20"
+                        aria-label="Good"
+                      >
                         <ThumbsUp className="h-3.5 w-3.5" />
                       </button>
-                      <button onClick={() => { tagLastCall("bad"); toast("Marked bad"); }}
-                        className="p-1 rounded hover:bg-destructive/20" aria-label="Bad">
+                      <button
+                        onClick={() => {
+                          tagLastCall("bad");
+                          toast("Marked bad");
+                        }}
+                        className="p-1 rounded hover:bg-destructive/20"
+                        aria-label="Bad"
+                      >
                         <ThumbsDown className="h-3.5 w-3.5" />
                       </button>
                     </>
@@ -112,52 +147,44 @@ export function CallSheet({ plays, onSelect, onShowHuddle }: Props) {
           )}
         </div>
 
-        {/* Numbered call list — wristband style */}
-        <div className="mt-5 space-y-4">
+        {/* Visual play grid — see the routes, tap to call & expand */}
+        <div className="mt-5 space-y-5">
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-display no-print">
-            Tap a number to call · star plays for game day
+            Scroll the plays · tap a diagram to call it and show the huddle
           </div>
-          {ordered.map(([group, list]) => (
-            <div key={group}>
-              <div className="text-[11px] font-display tracking-widest text-primary border-b border-border pb-1 mb-2">
-                {group.toUpperCase()}
-              </div>
-              <div className="space-y-1.5">
-                {list.map((p) => {
-                  const num = flat.findIndex((x) => x.id === p.id) + 1;
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => call(p)}
-                      className="w-full flex items-center gap-3 p-2.5 rounded-lg bg-secondary/60 hover:bg-secondary border border-border text-left active:scale-[0.98] transition"
-                    >
-                      <div className="w-10 h-10 rounded-md bg-primary text-primary-foreground font-display text-xl flex items-center justify-center shrink-0">
-                        {num}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-display text-base leading-tight truncate flex items-center gap-1.5">
-                          {favorites.has(p.id) && <Star className="h-3.5 w-3.5 fill-primary text-primary" />}
-                          {p.name}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground truncate">
-                          {p.keyRead || p.purpose}
-                        </div>
-                      </div>
-                      {p.tags && p.tags.length > 0 && (
-                        <div className="hidden sm:flex gap-1">
-                          {p.tags.slice(0, 2).map((t) => (
-                            <span key={t} className="text-[9px] px-1.5 py-0.5 rounded bg-background/60 font-display tracking-wide">
-                              {t.toUpperCase()}
-                            </span>
-                          ))}
-                        </div>
+          <div className="grid grid-cols-2 gap-3">
+            {flat.map((p, i) => (
+              <button
+                key={p.id}
+                onClick={() => call(p)}
+                className="text-left rounded-lg bg-secondary/60 hover:bg-secondary border border-border overflow-hidden active:scale-[0.98] transition"
+                aria-label={`Call ${p.name} and show it fullscreen`}
+              >
+                <div className="flex items-center gap-2 px-2 py-1.5">
+                  <div className="w-7 h-7 rounded-md bg-primary text-primary-foreground font-display text-base flex items-center justify-center shrink-0">
+                    {i + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-display text-sm leading-tight truncate flex items-center gap-1">
+                      {favorites.has(p.id) && (
+                        <Star className="h-3 w-3 fill-primary text-primary shrink-0" />
                       )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+                      {p.name}
+                    </div>
+                    <div className="text-[9px] uppercase tracking-widest text-muted-foreground truncate">
+                      {p.formation}
+                    </div>
+                  </div>
+                </div>
+                <div className="px-1.5 pb-1.5">
+                  <FootballField play={p} assignment={assignment} players={players} />
+                </div>
+                <div className="px-2 pb-2 text-[10px] text-muted-foreground leading-snug line-clamp-2">
+                  {p.keyRead || p.purpose}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </SheetContent>
     </Sheet>
