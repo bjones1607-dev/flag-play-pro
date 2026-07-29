@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SidelineRouteImport } from './routes/sideline'
+import { Route as PlaysheetRouteImport } from './routes/playsheet'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SidelineRoute = SidelineRouteImport.update({
   id: '/sideline',
   path: '/sideline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlaysheetRoute = PlaysheetRouteImport.update({
+  id: '/playsheet',
+  path: '/playsheet',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,27 +31,31 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/playsheet': typeof PlaysheetRoute
   '/sideline': typeof SidelineRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/playsheet': typeof PlaysheetRoute
   '/sideline': typeof SidelineRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/playsheet': typeof PlaysheetRoute
   '/sideline': typeof SidelineRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sideline'
+  fullPaths: '/' | '/playsheet' | '/sideline'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sideline'
-  id: '__root__' | '/' | '/sideline'
+  to: '/' | '/playsheet' | '/sideline'
+  id: '__root__' | '/' | '/playsheet' | '/sideline'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PlaysheetRoute: typeof PlaysheetRoute
   SidelineRoute: typeof SidelineRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/sideline'
       fullPath: '/sideline'
       preLoaderRoute: typeof SidelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/playsheet': {
+      id: '/playsheet'
+      path: '/playsheet'
+      fullPath: '/playsheet'
+      preLoaderRoute: typeof PlaysheetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,8 +87,19 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PlaysheetRoute: PlaysheetRoute,
   SidelineRoute: SidelineRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

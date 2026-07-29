@@ -46,7 +46,8 @@ export type PlayTag =
   | "third-long"
   | "trick"
   | "run"
-  | "screen";
+  | "screen"
+  | "zone-beater";
 
 export interface ReceiverRoute {
   id: string;
