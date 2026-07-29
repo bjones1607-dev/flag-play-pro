@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { X, ChevronLeft, ChevronRight, Star, Play as PlayIcon, RotateCw } from "lucide-react";
 import { pushRecentCall } from "@/lib/storage";
 import { recordTouchdownResult, recordYardsResult, situationLabel, YARD_CHIPS } from "@/lib/game";
-import { useSituation } from "@/hooks/use-storage";
+import { useDrives, useSituation } from "@/hooks/use-storage";
 
 interface Props {
   open: boolean;
@@ -34,6 +34,7 @@ export function HuddleView({
   const [animKey, setAnimKey] = useState(0);
   const [animOn, setAnimOn] = useState(true);
   const [situation] = useSituation();
+  const drives = useDrives();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -81,16 +82,27 @@ export function HuddleView({
 
   // Fast-game loop: tapping a result records the call, the yards, the tag,
   // and the down — then drops back to the play grid for the next call.
+  const isRun = play.playType === "run";
   const result = (y: number) => {
     pushRecentCall({ id: play.id, name: play.name });
-    recordYardsResult(y);
+    recordYardsResult(y, { isRun });
     onClose();
   };
   const resultTd = () => {
     pushRecentCall({ id: play.id, name: play.name });
-    recordTouchdownResult();
+    recordTouchdownResult({ isRun });
     onClose();
   };
+
+  // League run rules, surfaced right where the call happens.
+  const noRunZone = situation.series === "to-score" && situation.yardLine >= 45;
+  const runWarning = isRun
+    ? drives.current.runUsed
+      ? "⚠ RUN ALREADY USED THIS DRIVE — this would be a penalty"
+      : noRunZone
+        ? "⚠ NO RUNS INSIDE THEIR 5 — pick a pass"
+        : "THIS IS OUR ONE RUN THIS DRIVE — make it count"
+    : null;
 
   return (
     <div
@@ -171,6 +183,18 @@ export function HuddleView({
               Coaching Note
             </div>
             <div className="text-sm leading-snug">{play.notes}</div>
+          </div>
+        )}
+
+        {runWarning && (
+          <div
+            className={`rounded-lg px-2.5 py-1.5 text-center font-display text-sm tracking-wide ${
+              runWarning.startsWith("⚠")
+                ? "bg-destructive/15 border border-destructive/40 text-destructive"
+                : "bg-primary/10 border border-primary/40 text-primary"
+            }`}
+          >
+            {runWarning}
           </div>
         )}
 

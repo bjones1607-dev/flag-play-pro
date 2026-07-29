@@ -109,7 +109,7 @@ export const DEFENSIVE_CALLS: DefensiveCall[] = [
     id: "spy",
     name: "Spy",
     subtitle: "Short middle shadows the QB",
-    when: "Their QB keeps tucking it and running. The spy takes away his legs.",
+    when: "They love their one run per drive — handoffs, pitches, scrambles behind the line. The spy erases it. Remember: their snap-taker can't legally cross the line without handing off first.",
     rules: [
       {
         pos: "Short Middle (SPY)",

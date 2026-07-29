@@ -61,9 +61,9 @@ function bucketFor(s: Situation): Bucket {
 
   if (s.series === "to-score" && s.yardLine >= 42) {
     return {
-      want: ["goalline", "redzone", "short", "run"],
+      want: ["goalline", "redzone", "short"],
       headline: "GOAL LINE — PUNCH IT IN",
-      detail: `${downLabel}. Quick ball, no dancing.`,
+      detail: `${downLabel}. Quick ball, no dancing — runs are illegal inside their 5.`,
       allowTricks: false,
     };
   }
@@ -125,15 +125,22 @@ export function suggestPlays(
     count?: number;
     // "Fresh plays" support: skip these ids so a re-deal surfaces new options.
     excludeIds?: Set<string>;
+    // League: ONE run per possession.
+    runUsed?: boolean;
   },
 ): SuggestResult {
   const bucket = bucketFor(situation);
   const count = opts.count ?? 4;
   const lastTwo = opts.recentIds.slice(0, 2);
-  const pool =
-    opts.excludeIds && opts.excludeIds.size > 0
-      ? plays.filter((p) => !opts.excludeIds!.has(p.id))
-      : plays;
+  // League run rules: no runs once the drive's run is used, and never
+  // within 5 yards of the end zone.
+  const noRunZone = situation.series === "to-score" && situation.yardLine >= 45;
+  const runsIllegal = !!opts.runUsed || noRunZone;
+  const pool = plays.filter((p) => {
+    if (opts.excludeIds?.has(p.id)) return false;
+    if (runsIllegal && p.playType === "run") return false;
+    return true;
+  });
 
   const scored = pool.map((play) => {
     const tags = new Set(play.tags ?? []);
