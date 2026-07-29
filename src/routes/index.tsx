@@ -25,6 +25,7 @@ import {
   Flag,
   Menu,
   Pencil,
+  RefreshCw,
   Search,
   Shield,
   Star,
@@ -75,6 +76,14 @@ function GameDay() {
   const [huddleIdx, setHuddleIdx] = useState<number | null>(null);
   const [gameOpen, setGameOpen] = useState(false);
   const [activePreset, setActivePreset] = useState<string | null>(null);
+  const [stripEdit, setStripEdit] = useState(false);
+  const [skipIds, setSkipIds] = useState<Set<string>>(new Set());
+
+  // Any situation change (yard chips, manual edit, presets) resets the
+  // fresh-plays skip list so the engine re-ranks from the full playbook.
+  useEffect(() => {
+    setSkipIds(new Set());
+  }, [situation]);
 
   // Hydrate a shared play from URL hash on first load
   useEffect(() => {
@@ -105,9 +114,18 @@ function GameDay() {
         stats: liveStats,
         isStarred: (id) => favorites.has(id),
         recentIds: recent.map((r) => r.id),
+        excludeIds: skipIds,
       }),
-    [basePlays, situation, liveStats, favorites, recent],
+    [basePlays, situation, liveStats, favorites, recent, skipIds],
   );
+
+  // "Fresh plays": skip the current four and re-deal. Wraps around once the
+  // playbook runs out so the button never dead-ends.
+  const freshPlays = () => {
+    const currentIds = suggested.suggestions.map((s) => s.play.id);
+    const next = new Set([...skipIds, ...currentIds]);
+    setSkipIds(next.size >= basePlays.length - 3 ? new Set() : next);
+  };
 
   const filtering = search.trim() !== "" || activeTags.size > 0 || favOnly;
   const showSuggested = !filtering;
@@ -348,12 +366,44 @@ function GameDay() {
         {showSuggested && suggested.suggestions.length > 0 && (
           <section>
             <div className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 mb-2">
-              <div className="font-display text-lg text-primary leading-none">
-                {suggested.headline}
+              <div className="flex items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="font-display text-lg text-primary leading-none">
+                    {suggested.headline}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                    {suggested.detail}
+                  </div>
+                </div>
+                <button
+                  onClick={freshPlays}
+                  className="shrink-0 text-[10px] px-2 py-1.5 rounded-full font-display tracking-wider bg-secondary text-muted-foreground hover:text-foreground flex items-center gap-1 active:scale-95 transition"
+                  aria-label="Deal four fresh suggested plays"
+                >
+                  <RefreshCw className="h-3 w-3" /> FRESH PLAYS
+                </button>
+                <button
+                  onClick={() => setStripEdit((v) => !v)}
+                  className={`shrink-0 text-[10px] px-2 py-1.5 rounded-full font-display tracking-wider flex items-center gap-1 active:scale-95 transition ${
+                    stripEdit
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                  aria-label="Edit down, distance, and score"
+                >
+                  <Pencil className="h-3 w-3" /> EDIT
+                </button>
               </div>
-              <div className="text-[11px] text-muted-foreground mt-1 leading-snug">
-                {suggested.detail}
-              </div>
+              {stripEdit && (
+                <div className="mt-2 pt-2 border-t border-primary/20">
+                  <SituationBar
+                    situation={situation}
+                    onChange={setSituation}
+                    activePreset={activePreset}
+                    onPreset={setActivePreset}
+                  />
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {suggested.suggestions.map(({ play: p, reason }) => (
