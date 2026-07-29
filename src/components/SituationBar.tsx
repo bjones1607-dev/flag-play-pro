@@ -14,12 +14,28 @@ export const SITUATION_PRESETS: Record<
   string,
   { label: string; tags: PlayTag[]; apply?: Partial<Situation> }
 > = {
-  "backed-up":   { label: "BACKED UP",     tags: ["short"],                apply: { yardLine: 5,  series: "to-mid",   down: 1 } },
-  "midfield":    { label: "MIDFIELD PUSH", tags: ["deep"],                 apply: { yardLine: 22, series: "to-mid",   down: 3 } },
-  "rz":          { label: "RED ZONE",      tags: ["redzone"],              apply: { yardLine: 40, series: "to-score", down: 1 } },
-  "gl":          { label: "GOAL LINE",     tags: ["goalline"],             apply: { yardLine: 47, series: "to-score", down: 1 } },
-  "must-convert":{ label: "MUST CONVERT",  tags: ["third-long", "deep"],   apply: { down: 3 } },
-  "4th-go":      { label: "4TH & GO",      tags: ["deep", "trick"],        apply: { series: "to-score", down: 4 } },
+  "backed-up": {
+    label: "BACKED UP",
+    tags: ["short"],
+    apply: { yardLine: 5, series: "to-mid", down: 1 },
+  },
+  midfield: {
+    label: "MIDFIELD PUSH",
+    tags: ["deep"],
+    apply: { yardLine: 22, series: "to-mid", down: 3 },
+  },
+  rz: {
+    label: "RED ZONE",
+    tags: ["redzone"],
+    apply: { yardLine: 40, series: "to-score", down: 1 },
+  },
+  gl: {
+    label: "GOAL LINE",
+    tags: ["goalline"],
+    apply: { yardLine: 47, series: "to-score", down: 1 },
+  },
+  "must-convert": { label: "MUST CONVERT", tags: ["third-long", "deep"], apply: { down: 3 } },
+  "4th-go": { label: "4TH & GO", tags: ["deep", "trick"], apply: { series: "to-score", down: 4 } },
 };
 
 export function SituationBar({ situation, onChange, activePreset, onPreset }: Props) {
@@ -29,9 +45,11 @@ export function SituationBar({ situation, onChange, activePreset, onPreset }: Pr
   const md = maxDown(situation);
   const togo = yardsToGo(situation);
   const downColor =
-    situation.down >= md ? "bg-destructive text-destructive-foreground"
-    : situation.down === md - 1 ? "bg-accent text-accent-foreground"
-    : "bg-primary text-primary-foreground";
+    situation.down >= md
+      ? "bg-destructive text-destructive-foreground"
+      : situation.down === md - 1
+        ? "bg-accent text-accent-foreground"
+        : "bg-primary text-primary-foreground";
 
   const downLabels = situation.series === "to-mid" ? [1, 2, 3] : [1, 2, 3, 4];
   const objective = situation.series === "to-mid" ? "TO MIDFIELD" : "TO SCORE";
@@ -44,15 +62,23 @@ export function SituationBar({ situation, onChange, activePreset, onPreset }: Pr
           <button
             onClick={() => onChange({ ...situation, series: "to-mid", down: 1 })}
             className={`px-3 h-9 rounded-md font-display tracking-wide ${
-              situation.series === "to-mid" ? "bg-foreground text-background" : "text-muted-foreground"
+              situation.series === "to-mid"
+                ? "bg-foreground text-background"
+                : "text-muted-foreground"
             }`}
-          >TO MID</button>
+          >
+            TO MID
+          </button>
           <button
             onClick={() => onChange({ ...situation, series: "to-score", down: 1 })}
             className={`px-3 h-9 rounded-md font-display tracking-wide ${
-              situation.series === "to-score" ? "bg-foreground text-background" : "text-muted-foreground"
+              situation.series === "to-score"
+                ? "bg-foreground text-background"
+                : "text-muted-foreground"
             }`}
-          >TO SCORE</button>
+          >
+            TO SCORE
+          </button>
         </div>
 
         {/* Down */}
@@ -70,38 +96,53 @@ export function SituationBar({ situation, onChange, activePreset, onPreset }: Pr
           ))}
         </div>
 
-        {/* Yard line */}
-        <div className="flex items-center gap-1 bg-secondary rounded-lg px-2">
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">Ball on</span>
-          <input
-            type="number"
-            min={1}
-            max={49}
-            value={situation.yardLine}
-            onChange={(e) => setField("yardLine", Math.max(1, Math.min(49, +e.target.value || 5)))}
-            className="w-12 bg-transparent font-display text-xl text-center outline-none"
-          />
-        </div>
-
-        {/* To-go computed badge */}
-        <div className="flex items-center gap-1 bg-secondary rounded-lg px-3">
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">Need</span>
-          <span className="font-display text-xl text-primary">{togo}</span>
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">{objective}</span>
+        {/* Yards to go — big tap chips, no fat-finger inputs. Tapping a need
+            back-calculates the ball spot for the current series. */}
+        <div className="flex items-center gap-1 bg-secondary rounded-lg p-1 px-2">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">
+            Need
+          </span>
+          {[5, 10, 15, 20, 25].map((n) => (
+            <button
+              key={n}
+              onClick={() => {
+                const goal = situation.series === "to-mid" ? 25 : 50;
+                setField("yardLine", Math.max(1, Math.min(49, goal - n)));
+              }}
+              className={`w-9 h-9 rounded-md font-display text-lg ${
+                togo === n
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-background/40"
+              }`}
+            >
+              {n}
+            </button>
+          ))}
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">
+            {objective} · ball on {situation.yardLine}
+          </span>
         </div>
 
         {/* Score */}
         <div className="flex items-center gap-1 bg-secondary rounded-lg px-2 ml-auto">
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">Us</span>
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">
+            Us
+          </span>
           <input
-            type="number" min={0} value={situation.ourScore}
+            type="number"
+            min={0}
+            value={situation.ourScore}
             onChange={(e) => setField("ourScore", Math.max(0, +e.target.value || 0))}
             className="w-12 bg-transparent font-display text-xl text-center outline-none text-primary"
           />
           <span className="text-muted-foreground">·</span>
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">Them</span>
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">
+            Them
+          </span>
           <input
-            type="number" min={0} value={situation.oppScore}
+            type="number"
+            min={0}
+            value={situation.oppScore}
             onChange={(e) => setField("oppScore", Math.max(0, +e.target.value || 0))}
             className="w-12 bg-transparent font-display text-xl text-center outline-none"
           />
@@ -127,7 +168,10 @@ export function SituationBar({ situation, onChange, activePreset, onPreset }: Pr
           <button
             key={key}
             onClick={() => {
-              if (activePreset === key) { onPreset(null); return; }
+              if (activePreset === key) {
+                onPreset(null);
+                return;
+              }
               onPreset(key);
               if (p.apply) onChange({ ...situation, ...p.apply });
             }}
