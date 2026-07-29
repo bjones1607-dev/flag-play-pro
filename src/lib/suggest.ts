@@ -123,13 +123,19 @@ export function suggestPlays(
     isStarred: (id: string) => boolean;
     recentIds: string[]; // most recent first
     count?: number;
+    // "Fresh plays" support: skip these ids so a re-deal surfaces new options.
+    excludeIds?: Set<string>;
   },
 ): SuggestResult {
   const bucket = bucketFor(situation);
   const count = opts.count ?? 4;
   const lastTwo = opts.recentIds.slice(0, 2);
+  const pool =
+    opts.excludeIds && opts.excludeIds.size > 0
+      ? plays.filter((p) => !opts.excludeIds!.has(p.id))
+      : plays;
 
-  const scored = plays.map((play) => {
+  const scored = pool.map((play) => {
     const tags = new Set(play.tags ?? []);
     let score = 0;
     const reasons: string[] = [];
