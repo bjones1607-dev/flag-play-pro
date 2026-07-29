@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Play } from "@/lib/types";
 import { PRESET_PLAYS } from "@/lib/plays";
 import { KID_RULES, PLAYSHEET_SECTIONS, QB_GOLDEN_RULE } from "@/lib/playsheet";
 import { FootballField } from "@/components/FootballField";
-import { useAssignment, usePlayers } from "@/hooks/use-storage";
+import { HuddleView } from "@/components/HuddleView";
+import { useAssignment, useFavorites, usePlayers } from "@/hooks/use-storage";
 import { Button } from "@/components/ui/button";
 import { Home, Printer, Tv } from "lucide-react";
 
@@ -25,6 +26,8 @@ export const Route = createFileRoute("/playsheet")({
 function Playsheet() {
   const players = usePlayers();
   const assignment = useAssignment();
+  const favorites = useFavorites();
+  const [huddleIdx, setHuddleIdx] = useState<number | null>(null);
 
   const byId = useMemo(() => {
     const m = new Map<string, Play>();
@@ -32,15 +35,29 @@ function Playsheet() {
     return m;
   }, []);
 
-  // Continuous wristband numbering across sections
+  // Flat, deduped play order across sections — drives both the wristband
+  // numbers and the fullscreen huddle carousel.
+  const flatPlays = useMemo(() => {
+    const seen = new Set<string>();
+    const list: Play[] = [];
+    for (const s of PLAYSHEET_SECTIONS) {
+      for (const id of s.playIds) {
+        if (seen.has(id)) continue;
+        const p = byId.get(id);
+        if (p) {
+          seen.add(id);
+          list.push(p);
+        }
+      }
+    }
+    return list;
+  }, [byId]);
+
   const numbered = useMemo(() => {
     const m = new Map<string, number>();
-    let n = 1;
-    for (const s of PLAYSHEET_SECTIONS) {
-      for (const id of s.playIds) if (!m.has(id)) m.set(id, n++);
-    }
+    flatPlays.forEach((p, i) => m.set(p.id, i + 1));
     return m;
-  }, []);
+  }, [flatPlays]);
 
   return (
     <div className="min-h-screen bg-background playsheet-page">
@@ -87,6 +104,9 @@ function Playsheet() {
           <span className="block text-xs text-muted-foreground mt-1">
             Their defense: 3 short defenders + 3 deep defenders. We attack the grass in between.
           </span>
+          <span className="block text-[11px] text-primary mt-1.5 no-print">
+            Tap any play to show it to the kids fullscreen — routes animate, swipe for next play.
+          </span>
         </div>
 
         {/* Kid rules */}
@@ -128,9 +148,12 @@ function Playsheet() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {plays.map((p) => (
-                  <article
+                  <button
                     key={p.id}
-                    className="playsheet-card rounded-xl border border-border bg-card overflow-hidden"
+                    type="button"
+                    onClick={() => setHuddleIdx(flatPlays.findIndex((x) => x.id === p.id))}
+                    aria-label={`Show ${p.name} fullscreen in huddle view`}
+                    className="playsheet-card rounded-xl border border-border bg-card overflow-hidden text-left hover:border-primary/60 active:scale-[0.99] transition"
                   >
                     <div className="flex items-center gap-2.5 px-3 py-2 border-b border-border bg-secondary/40">
                       <div className="w-9 h-9 rounded-md bg-primary text-primary-foreground font-display text-xl flex items-center justify-center shrink-0">
@@ -165,7 +188,7 @@ function Playsheet() {
                         </div>
                       )}
                     </div>
-                  </article>
+                  </button>
                 ))}
               </div>
             </section>
@@ -177,6 +200,19 @@ function Playsheet() {
           game-day list.
         </p>
       </main>
+
+      {/* Fullscreen huddle carousel for the iPad on the sideline */}
+      <HuddleView
+        open={huddleIdx !== null}
+        plays={flatPlays}
+        index={huddleIdx ?? 0}
+        assignment={assignment}
+        players={players}
+        isFavorite={(id) => favorites.has(id)}
+        onToggleFavorite={(id) => favorites.toggle(id)}
+        onIndex={(i) => setHuddleIdx(i)}
+        onClose={() => setHuddleIdx(null)}
+      />
     </div>
   );
 }

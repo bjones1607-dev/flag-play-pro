@@ -56,4 +56,9 @@ export const PLAYSHEET_SECTIONS: PlaysheetSection[] = [
     subtitle: "Once-a-game specials — save them for the right moment",
     playIds: ["zb-turtle", "jet-sweep-left"],
   },
+  {
+    title: "EMERGENCY",
+    subtitle: "Down late, need a miracle — practice these so they're not chaos",
+    playIds: ["zb-hook-ladder", "zb-boomerang", "zb-moon-shot"],
+  },
 ];
