@@ -48,7 +48,6 @@ export const CENTER_ROUTES: RouteType[] = [
   "flat",
   "hitch",
   "screen",
-  "block",
 ];
 
 export const CENTER_ROUTE_TIPS: Partial<Record<RouteType, string>> = {
@@ -86,7 +85,7 @@ export const PASS_ROUTES: PassRoute[] = [
   "delay",
   "swing",
   "wheel",
-  "block",
+  // "block" removed: UA Flag rules — blocking is a spot foul + loss of down.
 ];
 
 export const RUN_ROUTES: RunRoute[] = ["dive", "sweep", "counter"];
