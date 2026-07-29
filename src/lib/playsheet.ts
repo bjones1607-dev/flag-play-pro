@@ -65,17 +65,22 @@ export const PLAYSHEET_SECTIONS: PlaysheetSection[] = [
   {
     title: "MONEY DOWNS",
     subtitle: "3rd/4th down and long — we need it NOW",
-    playIds: ["zb-safety-net", "qb-keep-draw"],
+    playIds: ["zb-safety-net", "zb-trojan"],
   },
   {
     title: "GOAL LINE",
-    subtitle: "Punch it in — quick ball, no dancing",
-    playIds: ["zb-thunder", "qb-sweep-right"],
+    subtitle: "Punch it in — passes only, runs are illegal inside their 5",
+    playIds: ["zb-thunder", "zb-secret-agent"],
+  },
+  {
+    title: "THE ONE RUN",
+    subtitle: "League rule: one run per possession, never inside their 5 — pick your moment",
+    playIds: ["rb-dive", "zb-slingshot", "jet-sweep-left", "counter-trey", "zb-trojan"],
   },
   {
     title: "CHANGE-UPS",
     subtitle: "Once-a-game specials — save them for the right moment",
-    playIds: ["zb-turtle", "jet-sweep-left"],
+    playIds: ["zb-turtle"],
   },
   {
     title: "EMERGENCY",

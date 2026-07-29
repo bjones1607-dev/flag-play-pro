@@ -23,11 +23,11 @@ export function situationLabel(s: Situation): string {
   return `${ORDINALS[s.down]} & ${need} to ${objective} · ball on ${s.yardLine}`;
 }
 
-export function recordYardsResult(yards: number): Situation {
+export function recordYardsResult(yards: number, opts?: { isRun?: boolean }): Situation {
   setYardsOnLastCall(yards);
   // Auto-tag for stats: gained = good, stopped = bad. No extra tap.
   tagLastCall(yards > 0 ? "good" : "bad");
-  addSnapToDrive(yards);
+  addSnapToDrive(yards, !!opts?.isRun);
   const s = loadSituation();
   const newYard = Math.max(1, Math.min(49, s.yardLine + yards));
   let next: Situation;
@@ -50,11 +50,11 @@ export function recordYardsResult(yards: number): Situation {
   return next;
 }
 
-export function recordTouchdownResult(): Situation {
+export function recordTouchdownResult(opts?: { isRun?: boolean }): Situation {
   const s = loadSituation();
   setYardsOnLastCall(50 - s.yardLine);
   tagLastCall("good");
-  addSnapToDrive(50 - s.yardLine);
+  addSnapToDrive(50 - s.yardLine, !!opts?.isRun);
   closeDrive("TD");
   toast.success("TOUCHDOWN — +6");
   const next: Situation = {

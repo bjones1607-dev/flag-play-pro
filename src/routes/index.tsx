@@ -115,8 +115,9 @@ function GameDay() {
         isStarred: (id) => favorites.has(id),
         recentIds: recent.map((r) => r.id),
         excludeIds: skipIds,
+        runUsed: !!drives.current.runUsed,
       }),
-    [basePlays, situation, liveStats, favorites, recent, skipIds],
+    [basePlays, situation, liveStats, favorites, recent, skipIds, drives],
   );
 
   // "Fresh plays": skip the current four and re-deal. Wraps around once the

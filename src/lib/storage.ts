@@ -217,7 +217,8 @@ export interface DriveSummary {
 }
 export interface DriveState {
   drives: DriveSummary[];
-  current: { plays: number; yards: number };
+  // runUsed: league allows ONE run per possession.
+  current: { plays: number; yards: number; runUsed?: boolean };
 }
 const DRIVES_KEY = "ff_drives_v1";
 const DRIVES_EVENT = "ff:drives-changed";
@@ -235,16 +236,17 @@ export const saveDrives = (d: DriveState) => {
   localStorage.setItem(DRIVES_KEY, JSON.stringify({ ...d, drives: d.drives.slice(-100) }));
   emit(DRIVES_EVENT);
 };
-export const addSnapToDrive = (yards: number) => {
+export const addSnapToDrive = (yards: number, isRun = false) => {
   const d = loadDrives();
   d.current.plays += 1;
   d.current.yards += yards;
+  if (isRun) d.current.runUsed = true;
   saveDrives(d);
 };
 export const closeDrive = (result: DriveSummary["result"]) => {
   const d = loadDrives();
   d.drives.push({ at: Date.now(), plays: d.current.plays, yards: d.current.yards, result });
-  d.current = { plays: 0, yards: 0 };
+  d.current = { plays: 0, yards: 0, runUsed: false };
   saveDrives(d);
 };
 

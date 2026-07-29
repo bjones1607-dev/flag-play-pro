@@ -743,37 +743,22 @@ export const PRESET_PLAYS: Play[] = [
   },
 
   // ===== RUN PLAYS =====
-  {
-    id: "qb-sweep-right",
-    name: "QB Sweep Right",
-    defense: "zone",
-    qb: QB,
-    qbAction: "keep-right",
-    formation: "Doubles",
-    playType: "run",
-    purpose: "QB takes the snap and sweeps wide right while the clear-out routes empty the edge.",
-    keyRead:
-      "Race to the right edge — your receivers sprint deep and take the defenders with them. Cut up into the grass they leave.",
-    tags: ["run", "short"],
-    receivers: [
-      { id: "r1", ...POS.farLeft, route: "go", side: "left" },
-      { id: "r2", ...POS.left, route: "hitch", side: "left" },
-      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
-      { id: "r4", ...POS.right, route: "go", side: "right" },
-      { id: "r5", ...POS.farRight, route: "go", side: "right" },
-    ],
-  },
+  // League rules: ONE run per possession, no runs within 5 yds of the end
+  // zone, and the snap-taker may NEVER cross the line with the ball — every
+  // run must start with a handoff or lateral.
   {
     id: "rb-dive",
-    name: "RB Dive",
-    defense: "man",
+    name: "Hammer",
+    defense: "zone",
     qb: QB,
     formation: "I-Form",
     playType: "run",
     purpose:
-      "Quick handoff up the gut; the out routes pull the short defenders wide open the middle.",
-    keyRead: "Hit the middle FAST — the outs stretch the defense sideways. Bounce only if jammed.",
-    tags: ["run", "short", "goalline"],
+      "Quick handoff up the gut; the out routes pull the short defenders wide and open the middle. The sure-thing short-yardage run.",
+    keyRead: "Hand it fast. Runner: hit the middle NOW — the outs stretch them sideways.",
+    notes:
+      "Our ONE run this drive — best when we need 3-4 sure yards. QB hands off and gets out of the way; he can never cross the line with the ball.",
+    tags: ["run", "short"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
       { id: "r2", ...POS.left, route: "out", side: "left" },
@@ -783,16 +768,40 @@ export const PRESET_PLAYS: Play[] = [
     ],
   },
   {
+    id: "zb-slingshot",
+    name: "Slingshot",
+    defense: "zone",
+    qb: QB,
+    formation: "Trips Left",
+    playType: "run",
+    purpose:
+      "Instant pitch to the speed back flying right — the lateral makes it legal, and it beats any handoff to the edge. Trips left drags the zone the wrong way.",
+    keyRead:
+      "Catch the snap, pitch right NOW. Runner: full speed around the edge, cut up the open grass.",
+    notes:
+      "Our ONE run this drive — call it when their short defenders lean toward our trips. Fastest kid gets the pitch.",
+    tags: ["run", "short", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "go", side: "left" },
+      { id: "r2", ...POS.left, route: "hitch", side: "left" },
+      { id: "r4", ...POS.slotLeft, route: "go", side: "left" },
+      { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
+      { id: "r5", ...POS.backfieldRight, route: "sweep", side: "right", isRunner: true },
+    ],
+  },
+  {
     id: "jet-sweep-left",
-    name: "Jet Sweep Left",
+    name: "Jet Sweep",
     defense: "zone",
     qb: QB,
     formation: "Trips Right",
     playType: "run",
     purpose:
-      "Pre-snap motion for a fast handoff; the left go route clears the corner for the sweep.",
+      "Pre-snap motion at full speed for a flying handoff; the left go route clears the corner. The zone can't cross the line until the ball changes hands — by then the jet is gone.",
     keyRead:
       "Hit the left edge at full speed — the go route empties the corner. Run to the open grass.",
+    notes:
+      "Our ONE run this drive — the motion man must be moving FULL SPEED at the snap or it's a slow sweep.",
     tags: ["run", "trick"],
     motion: { receiverId: "r4", toX: 50, toY: 8 },
     receivers: [
@@ -805,13 +814,16 @@ export const PRESET_PLAYS: Play[] = [
   },
   {
     id: "counter-trey",
-    name: "Counter Right",
-    defense: "man",
+    name: "Counter",
+    defense: "zone",
     qb: QB,
     formation: "Strong Right",
     playType: "run",
-    purpose: "Misdirection: fake left, run right — the crossing route legally picks the pursuit.",
-    keyRead: "Wait one count on the fake, then hit the right edge — the go route cleared it.",
+    purpose:
+      "Misdirection: the fake pulls pursuit left (and unleashes the defense across the line), then the handoff hits right behind them — the crossing route legally picks the chase.",
+    keyRead: "Runner: wait ONE count on the fake, then take the handoff right — the go cleared it.",
+    notes:
+      "Our ONE run this drive — call it after Jet Sweep has them chasing motion. Patience makes this play.",
     tags: ["run", "trick"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
@@ -822,22 +834,25 @@ export const PRESET_PLAYS: Play[] = [
     ],
   },
   {
-    id: "qb-keep-draw",
-    name: "QB Draw",
+    id: "zb-trojan",
+    name: "Trojan Horse",
     defense: "zone",
     qb: QB,
-    qbAction: "scramble",
-    formation: "Empty",
+    formation: "Spread",
     playType: "run",
-    purpose: "Show pass, then QB tucks and runs through soft middle.",
-    keyRead: "Drop two steps; if the middle opens, go.",
-    tags: ["run", "third-long", "trick"],
+    purpose:
+      "The legal draw: QB drops like it's a pass so the whole zone backpedals, then hands it inside. The dropping defenders give the middle away — and the handoff keeps it legal.",
+    keyRead:
+      "Drop two steps like you're throwing, count 'one-two', THEN hand it. Runner: slide up the middle behind the handoff.",
+    notes:
+      "Our ONE run this drive — the pass look is the whole trick, so sell it. QB can NEVER cross the line with the ball; the handoff is what makes this legal.",
+    tags: ["run", "third-long", "trick", "zone-beater"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "go", side: "left" },
-      { id: "r2", ...POS.left, route: "go", side: "left" },
+      { id: "r2", ...POS.left, route: "out", side: "left" },
       { id: "r3", ...POS.center, route: "delay", side: "right", isCenter: true },
-      { id: "r4", ...POS.right, route: "go", side: "right" },
-      { id: "r5", ...POS.farRight, route: "go", side: "right" },
+      { id: "r4", ...POS.right, route: "out", side: "right" },
+      { id: "r5", ...POS.backfield, route: "dive", side: "right", isRunner: true },
     ],
   },
   {
@@ -849,6 +864,8 @@ export const PRESET_PLAYS: Play[] = [
     playType: "run",
     purpose: "Hand to one back, who pitches across to a crossing back.",
     keyRead: "Sell the first run, then run away from pursuit.",
+    notes:
+      "Our ONE run this drive — save it for when they over-chase. Pitch UNDERHAND and backward.",
     tags: ["run", "trick"],
     motion: { receiverId: "r5", toX: 30, toY: 10 },
     receivers: [
