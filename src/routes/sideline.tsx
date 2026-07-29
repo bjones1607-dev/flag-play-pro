@@ -104,7 +104,7 @@ function Sideline() {
 
       {/* Top bar */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border no-print">
-        <div className="px-4 py-2.5 flex items-center gap-3">
+        <div className="px-4 py-2.5 flex flex-wrap items-center gap-x-3 gap-y-2">
           <Link to="/">
             <Button size="icon" variant="ghost" aria-label="Home">
               <Home className="h-5 w-5" />
