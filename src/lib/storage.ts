@@ -52,7 +52,68 @@ export const loadAssignment = (): PlayerAssignment => {
 };
 export const saveAssignment = (a: PlayerAssignment) => {
   localStorage.setItem(ASSIGN_KEY, JSON.stringify(a));
+  // Manual edits detach from the saved lineup they came from.
+  localStorage.removeItem(ACTIVE_LINEUP_KEY);
+  emit(LINEUP_EVENT);
   emit(ASSIGN_EVENT);
+};
+
+// ===== Lineups: named assignment sets (e.g. "Wave A" / "Wave B") =====
+// The active assignment (ASSIGN_KEY) stays the single source of truth that
+// every diagram reads; a lineup is a saved snapshot you can re-apply in one tap.
+export interface Lineup {
+  id: string;
+  name: string;
+  assignment: PlayerAssignment;
+}
+const LINEUPS_KEY = "ff_lineups_v1";
+const ACTIVE_LINEUP_KEY = "ff_active_lineup_v1";
+const LINEUP_EVENT = "ff:lineups-changed";
+
+export const loadLineups = (): Lineup[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem(LINEUPS_KEY) || "[]");
+  } catch {
+    return [];
+  }
+};
+export const saveLineups = (l: Lineup[]) => {
+  localStorage.setItem(LINEUPS_KEY, JSON.stringify(l));
+  emit(LINEUP_EVENT);
+};
+export const loadActiveLineupId = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(ACTIVE_LINEUP_KEY);
+};
+export const saveCurrentAsLineup = (name: string): Lineup => {
+  const lineup: Lineup = {
+    id: `lineup-${Date.now()}`,
+    name,
+    assignment: loadAssignment(),
+  };
+  saveLineups([...loadLineups(), lineup]);
+  localStorage.setItem(ACTIVE_LINEUP_KEY, lineup.id);
+  emit(LINEUP_EVENT);
+  return lineup;
+};
+export const applyLineup = (id: string) => {
+  const lineup = loadLineups().find((l) => l.id === id);
+  if (!lineup) return;
+  saveAssignment({ ...lineup.assignment });
+  localStorage.setItem(ACTIVE_LINEUP_KEY, id);
+  emit(LINEUP_EVENT);
+};
+export const updateLineupFromCurrent = (id: string) => {
+  const next = loadLineups().map((l) => (l.id === id ? { ...l, assignment: loadAssignment() } : l));
+  saveLineups(next);
+  localStorage.setItem(ACTIVE_LINEUP_KEY, id);
+  emit(LINEUP_EVENT);
+};
+export const deleteLineup = (id: string) => {
+  saveLineups(loadLineups().filter((l) => l.id !== id));
+  if (loadActiveLineupId() === id) localStorage.removeItem(ACTIVE_LINEUP_KEY);
+  emit(LINEUP_EVENT);
 };
 
 export const loadFavorites = (): string[] => {
@@ -68,10 +129,19 @@ export const saveFavorites = (ids: string[]) => {
   emit(FAV_EVENT);
 };
 
-export interface RecentCall { id: string; name: string; at: number; result?: "good" | "bad" }
+export interface RecentCall {
+  id: string;
+  name: string;
+  at: number;
+  result?: "good" | "bad";
+}
 export const loadRecentCalls = (): RecentCall[] => {
   if (typeof window === "undefined") return [];
-  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { return []; }
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+  } catch {
+    return [];
+  }
 };
 export const saveRecentCalls = (r: RecentCall[]) => {
   localStorage.setItem(RECENT_KEY, JSON.stringify(r.slice(0, 25)));
@@ -105,7 +175,12 @@ export interface Situation {
 const SITUATION_KEY = "ff_situation_v2";
 const SITUATION_EVENT = "ff:situation-changed";
 export const DEFAULT_SITUATION: Situation = {
-  down: 1, series: "to-mid", ourScore: 0, oppScore: 0, period: 1, yardLine: 5,
+  down: 1,
+  series: "to-mid",
+  ourScore: 0,
+  oppScore: 0,
+  period: 1,
+  yardLine: 5,
 };
 export const yardsToGo = (s: Situation): number =>
   s.series === "to-mid" ? Math.max(0, 25 - s.yardLine) : Math.max(0, 50 - s.yardLine);
@@ -115,7 +190,9 @@ export const loadSituation = (): Situation => {
   try {
     const raw = localStorage.getItem(SITUATION_KEY);
     return raw ? { ...DEFAULT_SITUATION, ...JSON.parse(raw) } : DEFAULT_SITUATION;
-  } catch { return DEFAULT_SITUATION; }
+  } catch {
+    return DEFAULT_SITUATION;
+  }
 };
 export const saveSituation = (s: Situation) => {
   localStorage.setItem(SITUATION_KEY, JSON.stringify(s));
@@ -135,4 +212,5 @@ export const EVENTS = {
   FAV: FAV_EVENT,
   RECENT: RECENT_EVENT,
   SITUATION: "ff:situation-changed",
+  LINEUPS: LINEUP_EVENT,
 };

@@ -138,6 +138,16 @@
     break-inside: avoid;
     color: #000 !important;
   }
+
+  /* 3x3 Zone Attack play sheet */
+  .playsheet-page .print-only { display: block !important; }
+  .playsheet-print-area { max-width: none !important; padding: 0 !important; }
+  .playsheet-section { break-inside: avoid-page; }
+  .playsheet-card {
+    break-inside: avoid;
+    border-color: #000 !important;
+  }
 }
+.print-only { display: none; }
 
 

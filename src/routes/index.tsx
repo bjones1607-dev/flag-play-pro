@@ -29,6 +29,7 @@ import {
   Share2,
   ImageDown,
   Tv,
+  BookOpen,
 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { useAssignment, useCustomPlays, useFavorites, usePlayers } from "@/hooks/use-storage";
@@ -228,6 +229,12 @@ function Index() {
               onSelect={setSelectedId}
               onShowHuddle={() => setHuddleOpen(true)}
             />
+            <Link to="/playsheet">
+              <Button variant="secondary" className="gap-1.5 px-3" aria-label="Open 3x3 zone play sheet">
+                <BookOpen className="h-4 w-4" />
+                <span className="font-display text-sm hidden sm:inline">ZONE SHEET</span>
+              </Button>
+            </Link>
             <Link to="/sideline">
               <Button variant="secondary" className="gap-1.5 px-3" aria-label="Open sideline mode">
                 <Tv className="h-4 w-4" />

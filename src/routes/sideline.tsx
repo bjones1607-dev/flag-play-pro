@@ -4,11 +4,12 @@ import type { DefenseType, Play } from "@/lib/types";
 import { PRESET_PLAYS } from "@/lib/plays";
 import { FootballField } from "@/components/FootballField";
 import { SituationBar, SITUATION_PRESETS } from "@/components/SituationBar";
+import { LineupSwitcher } from "@/components/LineupSwitcher";
 import { useAssignment, useCustomPlays, useFavorites, usePlayers, useRecentCalls, useSituation } from "@/hooks/use-storage";
 import { pushRecentCall, saveRecentCalls, tagLastCall } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
-import { ChevronLeft, ChevronRight, Home, Printer, Star, ThumbsDown, ThumbsUp, Trash2, Play as PlayIcon, RotateCw } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, Home, Printer, Star, ThumbsDown, ThumbsUp, Trash2, Play as PlayIcon, RotateCw } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/sideline")({
@@ -114,7 +115,13 @@ function Sideline() {
             <p className="text-[9px] uppercase tracking-widest text-muted-foreground">Game-day call mode</p>
           </div>
 
-          <div className="ml-auto grid grid-cols-2 bg-secondary rounded-lg p-1 text-xs">
+          <Link to="/playsheet" className="ml-auto">
+            <Button size="sm" variant="secondary" className="gap-1.5" aria-label="Open 3x3 zone play sheet">
+              <BookOpen className="h-4 w-4" />
+              <span className="font-display text-xs hidden sm:inline">ZONE SHEET</span>
+            </Button>
+          </Link>
+          <div className="grid grid-cols-2 bg-secondary rounded-lg p-1 text-xs">
             <button
               onClick={() => setDefense("zone")}
               className={`px-3 py-1 rounded-md font-display tracking-wide ${defense === "zone" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
@@ -139,13 +146,14 @@ function Sideline() {
           </button>
         </div>
 
-        <div className="px-4 pb-3 no-print">
+        <div className="px-4 pb-3 no-print space-y-2">
           <SituationBar
             situation={situation}
             onChange={setSituation}
             activePreset={activePreset}
             onPreset={setActivePreset}
           />
+          <LineupSwitcher />
         </div>
       </header>
 

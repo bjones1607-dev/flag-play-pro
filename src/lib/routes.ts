@@ -102,6 +102,7 @@ export const TAG_LABELS: Record<PlayTag, string> = {
   trick: "Trick",
   run: "Run",
   screen: "Screen",
+  "zone-beater": "Zone Beater",
 };
 
 export const ALL_TAGS: PlayTag[] = [
@@ -113,4 +114,5 @@ export const ALL_TAGS: PlayTag[] = [
   "trick",
   "run",
   "screen",
+  "zone-beater",
 ];

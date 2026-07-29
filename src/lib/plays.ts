@@ -428,6 +428,277 @@ export const PRESET_PLAYS: Play[] = [
     ],
   },
 
+  // ===== ZONE BEATERS (3x3) =====
+  // Kid-named plays built to attack the 3-3 zone (3 short, 3 deep).
+  // keyRead = what the QB says out loud. notes = the huddle cue for the kids.
+  {
+    id: "zb-pizza",
+    name: "Pizza",
+    defense: "zone",
+    qb: QB,
+    formation: "Doubles",
+    purpose:
+      "Horizontal stretch: four quick targets sideline-to-sideline overload the three short zone defenders.",
+    keyRead:
+      "Pick a side before the snap. Throw the flat FAST — if he's covered, the hitch is right behind him.",
+    notes: "Deliver the pizza to the sideline! Catch it, turn, and run up the open grass.",
+    tags: ["short", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "hitch", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "flat", side: "left" },
+      { id: "r3", ...POS.center, route: "sit", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "flat", side: "right" },
+      { id: "r5", ...POS.farRight, route: "hitch", side: "right" },
+    ],
+  },
+  {
+    id: "zb-oreo",
+    name: "Oreo",
+    defense: "zone",
+    qb: QB,
+    formation: "Spread",
+    purpose:
+      "Slot go routes pull the three deep defenders back; the outside hitches (cookies) and center sit (cream) settle in the empty short grass.",
+    keyRead:
+      "Throw the hitch AWAY from the middle defender. If both are covered, the cream (center) is always open.",
+    notes:
+      "Cookies on the outside, cream in the middle. Hitch catchers: stop, turn, face the QB — don't drift.",
+    tags: ["short", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "hitch", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "go", side: "left" },
+      { id: "r3", ...POS.center, route: "sit", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "go", side: "right" },
+      { id: "r5", ...POS.farRight, route: "hitch", side: "right" },
+    ],
+  },
+  {
+    id: "zb-popcorn",
+    name: "Popcorn",
+    defense: "zone",
+    qb: QB,
+    formation: "Trips Left",
+    purpose:
+      "Instant bubble screen with two blockers. Zone flat defenders play deep off the line, so the edge grass is free.",
+    keyRead: "Snap it, throw the popcorn to the wide side right away. Don't hold it.",
+    notes:
+      "Blockers: build a wall and freeze. Runner: catch FIRST, then follow the wall up the sideline.",
+    tags: ["short", "screen", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "screen", side: "left" },
+      { id: "r2", ...POS.left, route: "block", side: "left" },
+      { id: "r3", ...POS.slotLeft, route: "block", side: "left" },
+      { id: "r4", ...POS.center, route: "delay", side: "right", isCenter: true },
+      { id: "r5", ...POS.farRight, route: "go", side: "right" },
+    ],
+  },
+  {
+    id: "zb-waves",
+    name: "Waves",
+    defense: "zone",
+    qb: QB,
+    formation: "Trips Right",
+    purpose:
+      "Flood: three routes at three depths on one side. Two zone defenders cannot cover three waves.",
+    keyRead:
+      "Look deep first, then come down: big wave (go), middle wave (out), little wave (flat). Throw the open one.",
+    tags: ["short", "third-long", "zone-beater"],
+    notes: "Three waves crash the same beach — deep, middle, short. Somebody is ALWAYS open.",
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "post", side: "left" },
+      { id: "r2", ...POS.center, route: "sit", side: "right", isCenter: true },
+      { id: "r3", ...POS.slotRight, route: "flat", side: "right" },
+      { id: "r4", ...POS.right, route: "out", side: "right" },
+      { id: "r5", ...POS.farRight, route: "go", side: "right" },
+    ],
+  },
+  {
+    id: "zb-ladder",
+    name: "Ladder",
+    defense: "zone",
+    qb: QB,
+    formation: "Doubles",
+    purpose:
+      "Levels: three crossing routes at climbing depths slice the seams between short and deep zones.",
+    keyRead:
+      "Climb the ladder: low rung (drag) first, then middle rung (in), then top rung (dig). Throw the lowest OPEN rung.",
+    notes: "Never skip to the top of the ladder — take the easy rung and run.",
+    tags: ["short", "third-long", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "drag", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "in", side: "left" },
+      { id: "r3", ...POS.center, route: "sit", side: "right", isCenter: true },
+      { id: "r4", ...POS.right, route: "dig", side: "right" },
+      { id: "r5", ...POS.farRight, route: "go", side: "right" },
+    ],
+  },
+  {
+    id: "zb-rocket",
+    name: "Rocket",
+    defense: "zone",
+    qb: QB,
+    formation: "Spread",
+    purpose:
+      "Seam shots: two slot verticals split the three deep defenders while outs hold the flat defenders wide.",
+    keyRead: "Watch the deep MIDDLE defender. Throw the rocket on the side he can't reach.",
+    notes:
+      "Rocket runners: run straight as an arrow, look for the ball over your inside shoulder at 10 yards.",
+    tags: ["deep", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "out", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "go", side: "left" },
+      { id: "r3", ...POS.center, route: "sit", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "go", side: "right" },
+      { id: "r5", ...POS.farRight, route: "out", side: "right" },
+    ],
+  },
+  {
+    id: "zb-rainbow",
+    name: "Rainbow",
+    defense: "zone",
+    qb: QB,
+    formation: "Doubles",
+    purpose:
+      "Smash: hitch under, corner over — a high-low sandwich on the short sideline defender.",
+    keyRead:
+      "Pick a side and watch the short sideline defender: if he sits on the hitch, throw the rainbow over his head. If he backs up, take the easy hitch.",
+    notes:
+      "One short, one long — he can't guard both. Corner runners: break to the front cone of the end zone.",
+    tags: ["deep", "redzone", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "hitch", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "corner", side: "left" },
+      { id: "r3", ...POS.center, route: "sneak", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "corner", side: "right" },
+      { id: "r5", ...POS.farRight, route: "hitch", side: "right" },
+    ],
+  },
+  {
+    id: "zb-safety-net",
+    name: "Safety Net",
+    defense: "zone",
+    qb: QB,
+    formation: "Spread",
+    purpose:
+      "Must-convert: verticals clear the deep three, the dig works the open middle, and the center sit is the guaranteed outlet.",
+    keyRead:
+      "Count 'one-two': gos clear it out, throw the dig behind the short defenders. In trouble? Hit the net (center).",
+    notes: "We NEVER take a sack — the net is always under you.",
+    tags: ["third-long", "deep", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "go", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "dig", side: "left" },
+      { id: "r3", ...POS.center, route: "sit", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "corner", side: "right" },
+      { id: "r5", ...POS.farRight, route: "go", side: "right" },
+    ],
+  },
+  {
+    id: "zb-thunder",
+    name: "Thunder",
+    defense: "zone",
+    qb: QB,
+    formation: "Doubles Tight",
+    purpose:
+      "Goal line: quick flats to both edges plus a center sneak — the ball is out before the zone can squeeze.",
+    keyRead:
+      "Quick count! Throw your best-side flat before the defense moves. Center sneak is plan B.",
+    notes: "Catch it and DIVE for the line — no dancing at the goal line.",
+    tags: ["goalline", "redzone", "short", "zone-beater"],
+    receivers: [
+      { id: "r1", x: 22, y: 4, route: "flat", side: "left" },
+      { id: "r2", x: 36, y: 4, route: "slant", side: "left" },
+      { id: "r3", ...POS.center, route: "sneak", side: "right", isCenter: true },
+      { id: "r4", x: 64, y: 4, route: "slant", side: "right" },
+      { id: "r5", x: 78, y: 4, route: "flat", side: "right" },
+    ],
+  },
+  {
+    id: "zb-turtle",
+    name: "Sneaky Turtle",
+    defense: "zone",
+    qb: QB,
+    formation: "Trips Right",
+    purpose:
+      "Trick: pump the screen right to pull the whole zone, then flip to the center leaking left into empty grass.",
+    keyRead:
+      "Pump the screen right — sell it! Then flip to the turtle sneaking out the back door left.",
+    notes: "Center: count 'one banana, two banana' — THEN sneak left. Don't leave early!",
+    tags: ["trick", "short", "redzone", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "go", side: "left" },
+      { id: "r2", ...POS.center, route: "leak", side: "left", isCenter: true },
+      { id: "r3", ...POS.slotRight, route: "screen", side: "right" },
+      { id: "r4", ...POS.right, route: "block", side: "right" },
+      { id: "r5", ...POS.farRight, route: "block", side: "right" },
+    ],
+  },
+
+  // ----- Desperation tricks (down late, need a miracle) -----
+  {
+    id: "zb-hook-ladder",
+    name: "Hook & Ladder",
+    defense: "zone",
+    qb: QB,
+    formation: "Doubles",
+    purpose:
+      "The classic desperation chain: deep curl catch, instant pitch to a trailer at full speed. Zone defenders converge on the hook and the ladder man runs past everyone.",
+    keyRead:
+      "Throw the deep curl on time. Curl catcher: catch, turn, and PITCH to your buddy sprinting by.",
+    notes:
+      "Ladder man: time your sprint so you pass the hook right as he catches it. Yell 'BALL!' for the pitch. Practice this 10 times before you ever call it.",
+    tags: ["trick", "deep", "third-long", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "curl", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "flat", side: "left" },
+      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "go", side: "right" },
+      { id: "r5", ...POS.farRight, route: "go", side: "right" },
+    ],
+  },
+  {
+    id: "zb-boomerang",
+    name: "Boomerang",
+    defense: "zone",
+    qb: QB,
+    formation: "Trips Right",
+    purpose:
+      "Double pass: quick screen left pulls the whole zone forward, then the screen catcher (still behind the line) launches deep to the sneaking go route.",
+    keyRead:
+      "Throw the boomerang (screen) fast. Screen catcher: catch BEHIND the line, take one look, throw deep to the streaker.",
+    notes:
+      "Put your second-best thrower at the screen. The catch must stay behind the line so the deep throw is legal — check with the ref before the game.",
+    tags: ["trick", "deep", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "screen", side: "left" },
+      { id: "r2", ...POS.left, route: "block", side: "left" },
+      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "post", side: "right" },
+      { id: "r5", ...POS.farRight, route: "go", side: "right" },
+    ],
+  },
+  {
+    id: "zb-moon-shot",
+    name: "Moon Shot",
+    defense: "zone",
+    qb: QB,
+    formation: "Spread",
+    purpose:
+      "Hail Mary with structure: three verticals converge on one deep spot, one trailer sits under for the tip or the panic checkdown.",
+    keyRead:
+      "Big drop, count 'one-two-three-LAUNCH' — throw it high to the crowd. Trailer: catch anything that pops out.",
+    notes:
+      "Jumpers: box out like rebounding a basketball. Trailer: DO NOT jump — stay under the pile for the tip.",
+    tags: ["trick", "deep", "third-long", "zone-beater"],
+    receivers: [
+      { id: "r1", ...POS.farLeft, route: "post", side: "left" },
+      { id: "r2", ...POS.slotLeft, route: "go", side: "left" },
+      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r4", ...POS.slotRight, route: "post", side: "right" },
+      { id: "r5", ...POS.farRight, route: "curl", side: "right" },
+    ],
+  },
+
   // ===== RUN PLAYS =====
   {
     id: "qb-sweep-right",

@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react";
 import {
+  applyLineup,
+  deleteLineup,
   EVENTS,
+  loadActiveLineupId,
   loadAssignment,
   loadCustomPlays,
   loadFavorites,
+  loadLineups,
   loadPlayers,
   loadRecentCalls,
   loadSituation,
+  saveCurrentAsLineup,
   saveFavorites,
   saveSituation,
+  updateLineupFromCurrent,
+  type Lineup,
   type RecentCall,
   type Situation,
 } from "@/lib/storage";
@@ -71,6 +78,34 @@ export function useFavorites(): {
   return { ids, has: (id) => ids.has(id), toggle };
 }
 
+export function useLineups(): {
+  lineups: Lineup[];
+  activeId: string | null;
+  apply: (id: string) => void;
+  saveCurrent: (name: string) => Lineup;
+  update: (id: string) => void;
+  remove: (id: string) => void;
+} {
+  const [lineups, setLineups] = useState<Lineup[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  useEffect(() => {
+    const refresh = () => {
+      setLineups(loadLineups());
+      setActiveId(loadActiveLineupId());
+    };
+    refresh();
+    return subscribe([EVENTS.LINEUPS], refresh);
+  }, []);
+  return {
+    lineups,
+    activeId,
+    apply: applyLineup,
+    saveCurrent: saveCurrentAsLineup,
+    update: updateLineupFromCurrent,
+    remove: deleteLineup,
+  };
+}
+
 export function useRecentCalls(): RecentCall[] {
   const [v, setV] = useState<RecentCall[]>([]);
   useEffect(() => {
@@ -86,6 +121,9 @@ export function useSituation(): [Situation, (s: Situation) => void] {
     setV(loadSituation());
     return subscribe([EVENTS.SITUATION], () => setV(loadSituation()));
   }, []);
-  const set = (s: Situation) => { saveSituation(s); setV(s); };
+  const set = (s: Situation) => {
+    saveSituation(s);
+    setV(s);
+  };
   return [v, set];
 }
