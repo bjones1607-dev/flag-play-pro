@@ -15,7 +15,8 @@ import {
   useSituation,
 } from "@/hooks/use-storage";
 import { liveStatsFromLog, suggestPlays } from "@/lib/suggest";
-import { pushRecentCall, saveRecentCalls, setYardsOnLastCall, tagLastCall } from "@/lib/storage";
+import { pushRecentCall, saveRecentCalls } from "@/lib/storage";
+import { recordTouchdownResult, recordYardsResult, YARD_CHIPS } from "@/lib/game";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -27,8 +28,6 @@ import {
   Printer,
   Shield,
   Star,
-  ThumbsDown,
-  ThumbsUp,
   Trash2,
   Play as PlayIcon,
   RotateCw,
@@ -121,43 +120,19 @@ function Sideline() {
     setAnimKey((k) => k + 1);
   }, [selectedId]);
 
-  const call = (p: Play) => {
-    pushRecentCall({ id: p.id, name: p.name });
-    setSelectedId(p.id);
-    toast.success(`Called: ${p.name}`);
-  };
+  // Tapping the list just selects/browses. A call is only committed when a
+  // result chip is tapped — same semantics as the huddle view.
+  const call = (p: Play) => setSelectedId(p.id);
 
-  // Quick yards run the game: record yards on the last call, move the ball,
-  // then handle first downs (crossing midfield), next down, or turnover.
   const recordYards = (y: number) => {
-    setYardsOnLastCall(y);
-    const newYard = Math.max(1, Math.min(49, situation.yardLine + y));
-    if (situation.series === "to-mid" && newYard >= 25) {
-      toast.success("FIRST DOWN — 4 downs to score!");
-      setSituation({ ...situation, series: "to-score", down: 1, yardLine: newYard });
-      return;
-    }
-    const md = situation.series === "to-mid" ? 3 : 4;
-    const next = situation.down + 1;
-    if (next > md) {
-      toast("Turnover on downs — their ball");
-      setSituation({ ...situation, series: "to-mid", down: 1, yardLine: 5 });
-    } else {
-      setSituation({ ...situation, down: next as 1 | 2 | 3 | 4, yardLine: newYard });
-      toast(`${y > 0 ? "+" : ""}${y} yds · down ${next}`);
-    }
+    if (!current) return;
+    pushRecentCall({ id: current.id, name: current.name });
+    recordYardsResult(y);
   };
   const recordTouchdown = () => {
-    setYardsOnLastCall(50 - situation.yardLine);
-    tagLastCall("good");
-    toast.success("TOUCHDOWN — +6");
-    setSituation({
-      ...situation,
-      ourScore: situation.ourScore + 6,
-      series: "to-mid",
-      down: 1,
-      yardLine: 5,
-    });
+    if (!current) return;
+    pushRecentCall({ id: current.id, name: current.name });
+    recordTouchdownResult();
   };
 
   return (
@@ -402,11 +377,36 @@ function Sideline() {
                 </div>
               )}
 
-              {/* Last called + result */}
+              {/* One-tap result for the selected play: records the call + yards
+                  + auto-tag, then advances the down / first down / turnover. */}
+              <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 space-y-1.5">
+                <div className="text-[10px] uppercase tracking-widest text-primary font-display">
+                  Ran {current.name}? Tap what happened
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {YARD_CHIPS.map((y) => (
+                    <button
+                      key={y}
+                      onClick={() => recordYards(y)}
+                      className="text-sm px-3 py-2 rounded-lg font-display tracking-wider bg-secondary text-foreground hover:bg-secondary/70 active:scale-95 transition"
+                    >
+                      {y > 0 ? `+${y}` : y}
+                    </button>
+                  ))}
+                  <button
+                    onClick={recordTouchdown}
+                    className="text-sm px-3 py-2 rounded-lg font-display tracking-wider bg-primary text-primary-foreground active:scale-95 transition"
+                  >
+                    TD
+                  </button>
+                </div>
+              </div>
+
+              {/* Call history */}
               <div className="rounded-lg border border-border bg-secondary/40 p-3">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-1.5">
                   <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">
-                    Last Called
+                    Snaps this game
                   </div>
                   {recent.length > 0 && (
                     <button
@@ -420,73 +420,13 @@ function Sideline() {
                     </button>
                   )}
                 </div>
-                {recent[0] ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 font-display text-lg leading-none truncate">
-                        {recent[0].name}
-                        {typeof recent[0].yards === "number" && (
-                          <span className="ml-2 text-sm text-primary">
-                            {recent[0].yards > 0 ? "+" : ""}
-                            {recent[0].yards} yds
-                          </span>
-                        )}
-                      </div>
-                      {/* Quality tags only — the yard chips below run the downs */}
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => {
-                          tagLastCall("good");
-                          toast.success("Tagged: worked");
-                        }}
-                        aria-label="Tag play as worked"
-                      >
-                        <ThumbsUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => {
-                          tagLastCall("bad");
-                          toast("Tagged: didn't work");
-                        }}
-                        aria-label="Tag play as didn't work"
-                      >
-                        <ThumbsDown className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {/* One tap per snap: records yards, moves the ball, advances the
-                        down, awards the first down at midfield, or turns it over. */}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">
-                        Result
-                      </span>
-                      {[-3, 0, 3, 5, 8, 12, 20].map((y) => (
-                        <button
-                          key={y}
-                          onClick={() => recordYards(y)}
-                          className="text-sm px-3 py-2 rounded-lg font-display tracking-wider bg-secondary text-foreground hover:bg-secondary/70 active:scale-95 transition"
-                        >
-                          {y > 0 ? `+${y}` : y}
-                        </button>
-                      ))}
-                      <button
-                        onClick={recordTouchdown}
-                        className="text-sm px-3 py-2 rounded-lg font-display tracking-wider bg-primary text-primary-foreground active:scale-95 transition"
-                      >
-                        TD
-                      </button>
-                    </div>
+                {recent.length === 0 ? (
+                  <div className="text-sm text-muted-foreground italic">
+                    No snaps yet — pick a play, run it, tap the result.
                   </div>
                 ) : (
-                  <div className="text-sm text-muted-foreground italic">
-                    No call yet — pick a play on the left.
-                  </div>
-                )}
-                {recent.length > 1 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {recent.slice(1, 8).map((r) => (
+                  <div className="flex flex-wrap gap-1">
+                    {recent.slice(0, 10).map((r) => (
                       <span
                         key={r.at}
                         className={`text-[10px] px-1.5 py-0.5 rounded font-display tracking-wide ${
@@ -498,6 +438,7 @@ function Sideline() {
                         }`}
                       >
                         {r.name}
+                        {typeof r.yards === "number" && ` ${r.yards > 0 ? "+" : ""}${r.yards}`}
                       </span>
                     ))}
                   </div>
