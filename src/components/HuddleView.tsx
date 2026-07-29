@@ -4,8 +4,7 @@ import { FootballField } from "./FootballField";
 import { Button } from "@/components/ui/button";
 import { X, ChevronLeft, ChevronRight, Star, Play as PlayIcon, RotateCw } from "lucide-react";
 import { pushRecentCall } from "@/lib/storage";
-import { recordTouchdownResult, recordYardsResult, situationLabel, YARD_CHIPS } from "@/lib/game";
-import { useDrives, useSituation } from "@/hooks/use-storage";
+import { recordTouchdownResult, recordYardsResult, YARD_CHIPS } from "@/lib/game";
 
 interface Props {
   open: boolean;
@@ -33,8 +32,6 @@ export function HuddleView({
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [animKey, setAnimKey] = useState(0);
   const [animOn, setAnimOn] = useState(true);
-  const [situation] = useSituation();
-  const drives = useDrives();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,29 +77,22 @@ export function HuddleView({
     setTouchStart(null);
   };
 
-  // Fast-game loop: tapping a result records the call, the yards, the tag,
-  // and the down — then drops back to the play grid for the next call.
-  const isRun = play.playType === "run";
+  // Fast-game loop: tap what happened → yards + auto-tag recorded for stats,
+  // then straight back to the play grid.
   const result = (y: number) => {
     pushRecentCall({ id: play.id, name: play.name });
-    recordYardsResult(y, { isRun });
+    recordYardsResult(y);
     onClose();
   };
   const resultTd = () => {
     pushRecentCall({ id: play.id, name: play.name });
-    recordTouchdownResult({ isRun });
+    recordTouchdownResult();
     onClose();
   };
 
-  // League run rules, surfaced right where the call happens.
-  const noRunZone = situation.series === "to-score" && situation.yardLine >= 45;
-  const runWarning = isRun
-    ? drives.current.runUsed
-      ? "⚠ RUN ALREADY USED THIS DRIVE — this would be a penalty"
-      : noRunZone
-        ? "⚠ NO RUNS INSIDE THEIR 5 — pick a pass"
-        : "THIS IS OUR ONE RUN THIS DRIVE — make it count"
-    : null;
+  // Static league reminder on run plays — no bookkeeping required.
+  const runWarning =
+    play.playType === "run" ? "LEAGUE RULES: one run per possession · never inside their 5" : null;
 
   return (
     <div
@@ -121,7 +111,7 @@ export function HuddleView({
             {play.name.toUpperCase()}
           </div>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5 truncate">
-            {situationLabel(situation)} · {play.formation}
+            {play.formation} · {play.defense === "zone" ? "VS 3-3 ZONE" : "VS MAN"}
           </div>
         </div>
         <Button
@@ -187,13 +177,7 @@ export function HuddleView({
         )}
 
         {runWarning && (
-          <div
-            className={`rounded-lg px-2.5 py-1.5 text-center font-display text-sm tracking-wide ${
-              runWarning.startsWith("⚠")
-                ? "bg-destructive/15 border border-destructive/40 text-destructive"
-                : "bg-primary/10 border border-primary/40 text-primary"
-            }`}
-          >
+          <div className="rounded-lg px-2.5 py-1.5 text-center font-display text-sm tracking-wide bg-primary/10 border border-primary/40 text-primary">
             {runWarning}
           </div>
         )}
@@ -204,6 +188,12 @@ export function HuddleView({
             Ran it? Tap what happened
           </div>
           <div className="flex flex-wrap justify-center items-center gap-1.5">
+            <button
+              onClick={() => result(0)}
+              className="text-base px-3.5 py-2.5 rounded-lg font-display tracking-wider bg-secondary text-muted-foreground hover:bg-secondary/70 active:scale-95 transition"
+            >
+              INC
+            </button>
             {YARD_CHIPS.map((y) => (
               <button
                 key={y}

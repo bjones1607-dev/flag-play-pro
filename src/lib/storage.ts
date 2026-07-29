@@ -204,50 +204,8 @@ export const loadGameStart = (): number => {
 };
 export const startNewGame = () => {
   localStorage.setItem(GAME_START_KEY, String(Date.now()));
-  saveDrives({ drives: loadDrives().drives, current: { plays: 0, yards: 0 } });
+  saveSituation(DEFAULT_SITUATION);
   emit(CALLLOG_EVENT);
-};
-
-// ===== Drives: per-possession summaries ("6 plays, 38 yds, TD") =====
-export interface DriveSummary {
-  at: number; // when the drive ended
-  plays: number;
-  yards: number;
-  result: "TD" | "DOWNS";
-}
-export interface DriveState {
-  drives: DriveSummary[];
-  // runUsed: league allows ONE run per possession.
-  current: { plays: number; yards: number; runUsed?: boolean };
-}
-const DRIVES_KEY = "ff_drives_v1";
-const DRIVES_EVENT = "ff:drives-changed";
-
-export const loadDrives = (): DriveState => {
-  if (typeof window === "undefined") return { drives: [], current: { plays: 0, yards: 0 } };
-  try {
-    const raw = localStorage.getItem(DRIVES_KEY);
-    return raw ? JSON.parse(raw) : { drives: [], current: { plays: 0, yards: 0 } };
-  } catch {
-    return { drives: [], current: { plays: 0, yards: 0 } };
-  }
-};
-export const saveDrives = (d: DriveState) => {
-  localStorage.setItem(DRIVES_KEY, JSON.stringify({ ...d, drives: d.drives.slice(-100) }));
-  emit(DRIVES_EVENT);
-};
-export const addSnapToDrive = (yards: number, isRun = false) => {
-  const d = loadDrives();
-  d.current.plays += 1;
-  d.current.yards += yards;
-  if (isRun) d.current.runUsed = true;
-  saveDrives(d);
-};
-export const closeDrive = (result: DriveSummary["result"]) => {
-  const d = loadDrives();
-  d.drives.push({ at: Date.now(), plays: d.current.plays, yards: d.current.yards, result });
-  d.current = { plays: 0, yards: 0, runUsed: false };
-  saveDrives(d);
 };
 
 // Attach yards gained to the most recent call (recent list + log).
@@ -316,5 +274,4 @@ export const EVENTS = {
   SITUATION: "ff:situation-changed",
   LINEUPS: LINEUP_EVENT,
   CALLLOG: CALLLOG_EVENT,
-  DRIVES: DRIVES_EVENT,
 };

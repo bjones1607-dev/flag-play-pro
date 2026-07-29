@@ -1,9 +1,9 @@
-import type { Play, PlayTag } from "./types";
-import type { CallLogEntry, Situation } from "./storage";
-import { maxDown, yardsToGo } from "./storage";
+import type { Play } from "./types";
+import type { CallLogEntry } from "./storage";
 
-// Anticipatory play suggestions: read the drive (down, distance, downs left)
-// plus what's actually gaining today, and surface the 3-4 best calls.
+// Simple suggestions: no situation tracking to maintain — rank by what's
+// gaining today, the coach's starred plays, and what the defense hasn't
+// just seen. Recording results is the only bookkeeping.
 
 export interface PlayLiveStats {
   calls: number;
@@ -43,81 +43,8 @@ export function liveStatsFromLog(
   return out;
 }
 
-interface Bucket {
-  want: PlayTag[];
-  headline: string;
-  detail: string;
-  allowTricks: boolean;
-}
-
-const ORDINALS = ["", "1st", "2nd", "3rd", "4th"];
-
-function bucketFor(s: Situation): Bucket {
-  const need = yardsToGo(s);
-  const downsLeft = maxDown(s) - s.down + 1;
-  const lastDown = downsLeft <= 1;
-  const objective = s.series === "to-mid" ? "midfield" : "the end zone";
-  const downLabel = `${ORDINALS[s.down]} down · ${need} to ${objective}`;
-
-  if (s.series === "to-score" && s.yardLine >= 42) {
-    return {
-      want: ["goalline", "redzone", "short"],
-      headline: "GOAL LINE — PUNCH IT IN",
-      detail: `${downLabel}. Quick ball, no dancing — runs are illegal inside their 5.`,
-      allowTricks: false,
-    };
-  }
-  if (lastDown && need >= 10) {
-    return {
-      want: ["third-long", "deep", "trick"],
-      headline: `LAST DOWN — NEED ${need}`,
-      detail: `${downLabel}. Gotta have a chunk; tricks are on the table.`,
-      allowTricks: true,
-    };
-  }
-  if (lastDown) {
-    return {
-      want: ["short", "run", "screen"],
-      headline: `LAST DOWN — NEED ${need}`,
-      detail: `${downLabel}. Take the sure thing past the line.`,
-      allowTricks: false,
-    };
-  }
-  if (need <= 5) {
-    return {
-      want: ["short", "run", "screen"],
-      headline: `${need} TO GO — CLOSE IT OUT`,
-      detail: `${downLabel}. One easy completion moves the chains.`,
-      allowTricks: false,
-    };
-  }
-  if (need >= 15 && downsLeft <= 2) {
-    return {
-      want: ["deep", "third-long"],
-      headline: "NEED A CHUNK",
-      detail: `${downLabel} with ${downsLeft} downs left. Attack the seams.`,
-      allowTricks: false,
-    };
-  }
-  if (s.series === "to-score" && s.yardLine >= 30) {
-    return {
-      want: ["redzone", "short", "deep"],
-      headline: "RED ZONE",
-      detail: `${downLabel}. Sandwiches and rainbows score here.`,
-      allowTricks: false,
-    };
-  }
-  return {
-    want: ["short", "screen", "run"],
-    headline: `${ORDINALS[s.down]} & ${need}`,
-    detail: `${downLabel}. Take what they give — the sticks come to you.`,
-    allowTricks: false,
-  };
-}
-
 export function suggestPlays(
   plays: Play[],
-  situation: Situation,
   opts: {
     stats: Record<string, PlayLiveStats>;
     isStarred: (id: string) => boolean;
@@ -125,58 +52,40 @@ export function suggestPlays(
     count?: number;
     // "Fresh plays" support: skip these ids so a re-deal surfaces new options.
     excludeIds?: Set<string>;
-    // League: ONE run per possession.
-    runUsed?: boolean;
   },
 ): SuggestResult {
-  const bucket = bucketFor(situation);
   const count = opts.count ?? 4;
   const lastTwo = opts.recentIds.slice(0, 2);
-  // League run rules: no runs once the drive's run is used, and never
-  // within 5 yards of the end zone.
-  const noRunZone = situation.series === "to-score" && situation.yardLine >= 45;
-  const runsIllegal = !!opts.runUsed || noRunZone;
-  const pool = plays.filter((p) => {
-    if (opts.excludeIds?.has(p.id)) return false;
-    if (runsIllegal && p.playType === "run") return false;
-    return true;
-  });
+  const pool = plays.filter((p) => !opts.excludeIds?.has(p.id));
 
   const scored = pool.map((play) => {
     const tags = new Set(play.tags ?? []);
     let score = 0;
     const reasons: string[] = [];
 
-    let tagHits = 0;
-    for (const t of bucket.want) if (tags.has(t)) tagHits++;
-    score += Math.min(tagHits, 2) * 3;
-    if (tagHits > 0) reasons.push("fits the situation");
-
-    // Tricks never outrank a solid call — they just stop being penalized
-    // when the situation is desperate.
-    if (tags.has("trick")) {
-      score += bucket.allowTricks ? -1 : -4;
-    }
-
     if (opts.isStarred(play.id)) {
-      score += 2;
+      score += 3;
       reasons.push("starred");
     }
 
     const st = opts.stats[play.id];
     if (st && st.samples > 0) {
       const avg = st.yards / st.samples;
-      score += Math.max(-2, Math.min(3, avg * 0.4));
+      score += Math.max(-2, Math.min(4, avg * 0.5));
       if (avg >= 5) reasons.push(`avg +${avg.toFixed(0)} today`);
       else if (avg <= 0 && st.samples >= 2) {
-        // Proven cold today — sink it below fresh options.
         score -= 4;
         reasons.push("cold today");
       }
     }
     if (st && st.good + st.bad > 0 && st.good > st.bad) score += 1;
 
-    // Don't suggest what we just ran (defense has seen it twice in a row).
+    // Tricks and the Emergency stuff shouldn't top a default deal.
+    if (tags.has("trick")) score -= 2;
+    // League allows one run per possession — at most surface runs modestly.
+    if (play.playType === "run") score -= 1;
+
+    // Don't suggest what we just ran (defense has seen it).
     if (lastTwo.includes(play.id)) score -= 5;
 
     return { play, score, reason: reasons.slice(0, 2).join(" · ") || "solid option" };
@@ -184,8 +93,8 @@ export function suggestPlays(
 
   scored.sort((a, b) => b.score - a.score);
   return {
-    headline: bucket.headline,
-    detail: bucket.detail,
+    headline: "COACH SAYS",
+    detail: "Starred plays + what's gaining today. Record results and this re-ranks itself.",
     suggestions: scored.slice(0, count).map(({ play, reason }) => ({ play, reason })),
   };
 }

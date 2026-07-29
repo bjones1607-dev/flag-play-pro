@@ -3,12 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import type { DefenseType, Play, PlayTag } from "@/lib/types";
 import { PRESET_PLAYS } from "@/lib/plays";
 import { saveCustomPlays } from "@/lib/storage";
-import { ALL_TAGS, TAG_LABELS } from "@/lib/routes";
+import { TAG_LABELS } from "@/lib/routes";
 import { liveStatsFromLog, suggestPlays } from "@/lib/suggest";
+import { addScore } from "@/lib/game";
 import { FootballField } from "@/components/FootballField";
 import { HuddleView } from "@/components/HuddleView";
 import { LineupSwitcher } from "@/components/LineupSwitcher";
-import { SituationBar } from "@/components/SituationBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,7 +20,6 @@ import {
 import {
   BarChart3,
   BookOpen,
-  ChevronDown,
   Dumbbell,
   Flag,
   Menu,
@@ -36,7 +35,6 @@ import {
   useAssignment,
   useCallLog,
   useCustomPlays,
-  useDrives,
   useFavorites,
   usePlayers,
   useRecentCalls,
@@ -52,12 +50,15 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "The one play sheet: live down & distance, coach suggestions, play diagrams, and one-tap results.",
+          "The one play sheet: play diagrams, coach suggestions, one-tap results, and stats that build themselves.",
       },
     ],
   }),
   component: GameDay,
 });
+
+// Keep it simple on the sideline: three filters plus the starred list.
+const FILTER_TAGS: PlayTag[] = ["short", "deep", "run"];
 
 function GameDay() {
   const [defense, setDefense] = useState<DefenseType>("zone");
@@ -67,23 +68,13 @@ function GameDay() {
   const favorites = useFavorites();
   const recent = useRecentCalls();
   const { log, gameStart } = useCallLog();
-  const drives = useDrives();
-  const [situation, setSituation] = useSituation();
+  const [situation] = useSituation();
 
   const [search, setSearch] = useState("");
   const [activeTags, setActiveTags] = useState<Set<PlayTag>>(new Set());
   const [favOnly, setFavOnly] = useState(false);
   const [huddleIdx, setHuddleIdx] = useState<number | null>(null);
-  const [gameOpen, setGameOpen] = useState(false);
-  const [activePreset, setActivePreset] = useState<string | null>(null);
-  const [stripEdit, setStripEdit] = useState(false);
   const [skipIds, setSkipIds] = useState<Set<string>>(new Set());
-
-  // Any situation change (yard chips, manual edit, presets) resets the
-  // fresh-plays skip list so the engine re-ranks from the full playbook.
-  useEffect(() => {
-    setSkipIds(new Set());
-  }, [situation]);
 
   // Hydrate a shared play from URL hash on first load
   useEffect(() => {
@@ -106,22 +97,19 @@ function GameDay() {
     [allPlays, defense],
   );
 
-  // Anticipatory suggestions — re-rank after every snap.
+  // Suggestions: starred + hot today, re-ranked as results are recorded.
   const liveStats = useMemo(() => liveStatsFromLog(log, gameStart), [log, gameStart]);
   const suggested = useMemo(
     () =>
-      suggestPlays(basePlays, situation, {
+      suggestPlays(basePlays, {
         stats: liveStats,
         isStarred: (id) => favorites.has(id),
         recentIds: recent.map((r) => r.id),
         excludeIds: skipIds,
-        runUsed: !!drives.current.runUsed,
       }),
-    [basePlays, situation, liveStats, favorites, recent, skipIds, drives],
+    [basePlays, liveStats, favorites, recent, skipIds],
   );
 
-  // "Fresh plays": skip the current four and re-deal. Wraps around once the
-  // playbook runs out so the button never dead-ends.
   const freshPlays = () => {
     const currentIds = suggested.suggestions.map((s) => s.play.id);
     const next = new Set([...skipIds, ...currentIds]);
@@ -131,8 +119,6 @@ function GameDay() {
   const filtering = search.trim() !== "" || activeTags.size > 0 || favOnly;
   const showSuggested = !filtering;
 
-  // Filtered grid; favorites first. When the suggestion strip is showing,
-  // its four plays are excluded from the grid below to avoid duplicates.
   const gridPlays = useMemo(() => {
     const q = search.trim().toLowerCase();
     const suggestedIds = new Set(showSuggested ? suggested.suggestions.map((s) => s.play.id) : []);
@@ -154,7 +140,6 @@ function GameDay() {
     ];
   }, [basePlays, search, activeTags, favOnly, favorites, showSuggested, suggested]);
 
-  // One flat list drives the huddle carousel: suggested first, then grid.
   const carousel = useMemo(
     () => (showSuggested ? [...suggested.suggestions.map((s) => s.play), ...gridPlays] : gridPlays),
     [showSuggested, suggested, gridPlays],
@@ -173,8 +158,6 @@ function GameDay() {
       return n;
     });
   };
-
-  const gameDrives = drives.drives.filter((d) => d.at >= gameStart);
 
   return (
     <div className="min-h-screen bg-background pb-8">
@@ -242,59 +225,22 @@ function GameDay() {
           </div>
         </div>
 
-        {/* Game bar: score + situation, tap to expand full controls */}
+        {/* Scoreboard: tap-only, no typing */}
         <div className="px-4 pb-2">
-          <button
-            onClick={() => setGameOpen((v) => !v)}
-            className="w-full flex items-center gap-3 rounded-lg border border-border bg-secondary/40 px-3 py-2 text-left"
-            aria-expanded={gameOpen}
-            aria-label="Toggle game controls"
-          >
-            <div className="font-display text-lg text-primary leading-none">
-              US {situation.ourScore} · THEM {situation.oppScore}
-            </div>
-            <div className="flex-1 text-[11px] uppercase tracking-widest text-muted-foreground truncate">
-              {suggested.headline}
-            </div>
-            <ChevronDown
-              className={`h-4 w-4 text-muted-foreground transition ${gameOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-          {gameOpen && (
-            <div className="mt-2 space-y-2">
-              <SituationBar
-                situation={situation}
-                onChange={setSituation}
-                activePreset={activePreset}
-                onPreset={setActivePreset}
-              />
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-secondary/40 px-3 py-2">
+            <span className="font-display text-2xl text-primary leading-none">
+              US {situation.ourScore}
+            </span>
+            <ScoreChip label="+6" onClick={() => addScore("us", 6)} />
+            <ScoreChip label="+1" onClick={() => addScore("us", 1)} />
+            <span className="text-muted-foreground mx-1">·</span>
+            <span className="font-display text-2xl leading-none">THEM {situation.oppScore}</span>
+            <ScoreChip label="+6" onClick={() => addScore("them", 6)} />
+            <ScoreChip label="+1" onClick={() => addScore("them", 1)} />
+            <div className="ml-auto">
               <LineupSwitcher />
             </div>
-          )}
-          {/* Drive strips */}
-          {(gameDrives.length > 0 || drives.current.plays > 0) && (
-            <div className="mt-1.5 flex flex-wrap gap-1">
-              {gameDrives.map((d) => (
-                <span
-                  key={d.at}
-                  className={`text-[10px] px-1.5 py-0.5 rounded font-display tracking-wide ${
-                    d.result === "TD"
-                      ? "bg-primary/20 text-primary"
-                      : "bg-destructive/20 text-destructive"
-                  }`}
-                >
-                  {d.result} · {d.plays} plays · {d.yards > 0 ? "+" : ""}
-                  {d.yards} yds
-                </span>
-              ))}
-              {drives.current.plays > 0 && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded font-display tracking-wide bg-background/60 text-muted-foreground">
-                  THIS DRIVE · {drives.current.plays} plays · {drives.current.yards > 0 ? "+" : ""}
-                  {drives.current.yards} yds
-                </span>
-              )}
-            </div>
-          )}
+          </div>
         </div>
 
         {/* Defense toggle */}
@@ -323,7 +269,7 @@ function GameDay() {
           </div>
         </div>
 
-        {/* Search + filters */}
+        {/* Search + the three filters that matter */}
         <div className="px-4 pb-3">
           <div className="flex flex-wrap items-center gap-1.5">
             <div className="relative flex-1 min-w-[140px]">
@@ -337,7 +283,7 @@ function GameDay() {
             </div>
             <button
               onClick={() => setFavOnly(!favOnly)}
-              className={`text-[11px] px-2.5 py-1.5 rounded-full font-display tracking-wide flex items-center gap-1 ${
+              className={`text-xs px-3 py-2 rounded-full font-display tracking-wide flex items-center gap-1 ${
                 favOnly
                   ? "bg-primary text-primary-foreground"
                   : "bg-secondary text-muted-foreground"
@@ -345,17 +291,17 @@ function GameDay() {
             >
               <Star className={`h-3 w-3 ${favOnly ? "fill-primary-foreground" : ""}`} /> GAME DAY
             </button>
-            {ALL_TAGS.map((t) => (
+            {FILTER_TAGS.map((t) => (
               <button
                 key={t}
                 onClick={() => toggleTag(t)}
-                className={`text-[11px] px-2 py-1.5 rounded-full font-display tracking-wide ${
+                className={`text-xs px-3 py-2 rounded-full font-display tracking-wide ${
                   activeTags.has(t)
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary text-muted-foreground"
                 }`}
               >
-                {TAG_LABELS[t]}
+                {TAG_LABELS[t].toUpperCase()}
               </button>
             ))}
           </div>
@@ -363,48 +309,25 @@ function GameDay() {
       </header>
 
       <main className="px-4 pt-4 max-w-6xl mx-auto space-y-5">
-        {/* Coach says: anticipatory suggestions for the current drive */}
+        {/* Coach says: starred + hot today */}
         {showSuggested && suggested.suggestions.length > 0 && (
           <section>
-            <div className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 mb-2">
-              <div className="flex items-start gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="font-display text-lg text-primary leading-none">
-                    {suggested.headline}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground mt-1 leading-snug">
-                    {suggested.detail}
-                  </div>
+            <div className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 mb-2 flex items-start gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="font-display text-lg text-primary leading-none">
+                  {suggested.headline}
                 </div>
-                <button
-                  onClick={freshPlays}
-                  className="shrink-0 text-[10px] px-2 py-1.5 rounded-full font-display tracking-wider bg-secondary text-muted-foreground hover:text-foreground flex items-center gap-1 active:scale-95 transition"
-                  aria-label="Deal four fresh suggested plays"
-                >
-                  <RefreshCw className="h-3 w-3" /> FRESH PLAYS
-                </button>
-                <button
-                  onClick={() => setStripEdit((v) => !v)}
-                  className={`shrink-0 text-[10px] px-2 py-1.5 rounded-full font-display tracking-wider flex items-center gap-1 active:scale-95 transition ${
-                    stripEdit
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-muted-foreground hover:text-foreground"
-                  }`}
-                  aria-label="Edit down, distance, and score"
-                >
-                  <Pencil className="h-3 w-3" /> EDIT
-                </button>
+                <div className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                  {suggested.detail}
+                </div>
               </div>
-              {stripEdit && (
-                <div className="mt-2 pt-2 border-t border-primary/20">
-                  <SituationBar
-                    situation={situation}
-                    onChange={setSituation}
-                    activePreset={activePreset}
-                    onPreset={setActivePreset}
-                  />
-                </div>
-              )}
+              <button
+                onClick={freshPlays}
+                className="shrink-0 text-[10px] px-2 py-1.5 rounded-full font-display tracking-wider bg-secondary text-muted-foreground hover:text-foreground flex items-center gap-1 active:scale-95 transition"
+                aria-label="Deal four fresh suggested plays"
+              >
+                <RefreshCw className="h-3 w-3" /> FRESH PLAYS
+              </button>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {suggested.suggestions.map(({ play: p, reason }) => (
@@ -476,6 +399,17 @@ function GameDay() {
         onClose={() => setHuddleIdx(null)}
       />
     </div>
+  );
+}
+
+function ScoreChip({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="text-xs px-2.5 py-1.5 rounded-full font-display tracking-wider bg-secondary text-muted-foreground hover:text-foreground active:scale-95 transition"
+    >
+      {label}
+    </button>
   );
 }
 

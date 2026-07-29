@@ -1,15 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { PRESET_PLAYS } from "@/lib/plays";
-import { DEFAULT_SITUATION } from "@/lib/storage";
 import { liveStatsFromLog, suggestPlays } from "@/lib/suggest";
-import {
-  useCallLog,
-  useCustomPlays,
-  useDrives,
-  useFavorites,
-  useSituation,
-} from "@/hooks/use-storage";
+import { useCallLog, useCustomPlays, useFavorites, useSituation } from "@/hooks/use-storage";
 import { Button } from "@/components/ui/button";
 import { Flag, Home, ThumbsDown, ThumbsUp } from "lucide-react";
 
@@ -29,7 +22,6 @@ export const Route = createFileRoute("/halftime")({
 
 function Halftime() {
   const { log, gameStart } = useCallLog();
-  const drives = useDrives();
   const favorites = useFavorites();
   const [customs] = useCustomPlays();
   const [situation] = useSituation();
@@ -37,7 +29,6 @@ function Halftime() {
   const allPlays = useMemo(() => [...PRESET_PLAYS, ...customs], [customs]);
   const gameLog = useMemo(() => log.filter((e) => e.at >= gameStart), [log, gameStart]);
   const stats = useMemo(() => liveStatsFromLog(log, gameStart), [log, gameStart]);
-  const gameDrives = drives.drives.filter((d) => d.at >= gameStart);
 
   const ranked = useMemo(() => {
     const rows = Object.entries(stats)
@@ -58,21 +49,17 @@ function Halftime() {
     .sort((a, b) => a.avg - b.avg)
     .slice(0, 3);
 
-  // What to open the second half with: fresh drive, informed by today's stats.
+  // What to open the second half with, informed by today's stats.
   const zonePlays = useMemo(() => allPlays.filter((p) => p.defense === "zone"), [allPlays]);
   const openers = useMemo(
     () =>
-      suggestPlays(
-        zonePlays,
-        { ...DEFAULT_SITUATION, ourScore: situation.ourScore, oppScore: situation.oppScore },
-        {
-          stats,
-          isStarred: (id) => favorites.has(id),
-          recentIds: [],
-          count: 3,
-        },
-      ),
-    [zonePlays, stats, favorites, situation],
+      suggestPlays(zonePlays, {
+        stats,
+        isStarred: (id) => favorites.has(id),
+        recentIds: [],
+        count: 3,
+      }),
+    [zonePlays, stats, favorites],
   );
 
   const totalYards = gameLog.reduce((t, e) => t + (e.yards ?? 0), 0);
@@ -107,45 +94,6 @@ function Halftime() {
             {gameLog.length} snaps · {totalYards} yards
           </div>
         </div>
-
-        {/* Drives */}
-        <section className="rounded-xl border border-border bg-card p-4">
-          <h2 className="font-display text-sm tracking-widest text-muted-foreground mb-2">
-            HOW THE DRIVES WENT
-          </h2>
-          {gameDrives.length === 0 && drives.current.plays === 0 ? (
-            <p className="text-sm text-muted-foreground italic">No drives recorded yet.</p>
-          ) : (
-            <div className="space-y-1.5">
-              {gameDrives.map((d, i) => (
-                <div key={d.at} className="flex items-center gap-2 text-sm">
-                  <span className="text-[10px] text-muted-foreground font-display w-14">
-                    DRIVE {i + 1}
-                  </span>
-                  <span
-                    className={`font-display text-base ${d.result === "TD" ? "text-primary" : "text-destructive"}`}
-                  >
-                    {d.result === "TD" ? "TOUCHDOWN" : "DOWNS"}
-                  </span>
-                  <span className="text-muted-foreground text-xs ml-auto">
-                    {d.plays} plays · {d.yards > 0 ? "+" : ""}
-                    {d.yards} yds
-                  </span>
-                </div>
-              ))}
-              {drives.current.plays > 0 && (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-[10px] text-muted-foreground font-display w-14">NOW</span>
-                  <span className="font-display text-base text-foreground">IN PROGRESS</span>
-                  <span className="text-muted-foreground text-xs ml-auto">
-                    {drives.current.plays} plays · {drives.current.yards > 0 ? "+" : ""}
-                    {drives.current.yards} yds
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-        </section>
 
         {/* Keep feeding / put away */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
