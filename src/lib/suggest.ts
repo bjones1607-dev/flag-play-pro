@@ -155,7 +155,11 @@ export function suggestPlays(
       const avg = st.yards / st.samples;
       score += Math.max(-2, Math.min(3, avg * 0.4));
       if (avg >= 5) reasons.push(`avg +${avg.toFixed(0)} today`);
-      else if (avg <= 0 && st.samples >= 2) reasons.push("cold today");
+      else if (avg <= 0 && st.samples >= 2) {
+        // Proven cold today — sink it below fresh options.
+        score -= 4;
+        reasons.push("cold today");
+      }
     }
     if (st && st.good + st.bad > 0 && st.good > st.bad) score += 1;
 

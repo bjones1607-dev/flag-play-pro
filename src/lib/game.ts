@@ -1,5 +1,7 @@
 import { toast } from "sonner";
 import {
+  addSnapToDrive,
+  closeDrive,
   loadSituation,
   maxDown,
   saveSituation,
@@ -25,6 +27,7 @@ export function recordYardsResult(yards: number): Situation {
   setYardsOnLastCall(yards);
   // Auto-tag for stats: gained = good, stopped = bad. No extra tap.
   tagLastCall(yards > 0 ? "good" : "bad");
+  addSnapToDrive(yards);
   const s = loadSituation();
   const newYard = Math.max(1, Math.min(49, s.yardLine + yards));
   let next: Situation;
@@ -36,6 +39,7 @@ export function recordYardsResult(yards: number): Situation {
     const n = s.down + 1;
     if (n > md) {
       next = { ...s, series: "to-mid", down: 1, yardLine: 5 };
+      closeDrive("DOWNS");
       toast("Turnover on downs — their ball");
     } else {
       next = { ...s, down: n as Situation["down"], yardLine: newYard };
@@ -50,6 +54,8 @@ export function recordTouchdownResult(): Situation {
   const s = loadSituation();
   setYardsOnLastCall(50 - s.yardLine);
   tagLastCall("good");
+  addSnapToDrive(50 - s.yardLine);
+  closeDrive("TD");
   toast.success("TOUCHDOWN — +6");
   const next: Situation = {
     ...s,

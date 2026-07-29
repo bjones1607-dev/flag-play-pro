@@ -4,7 +4,7 @@ import { useCallLog } from "@/hooks/use-storage";
 import { startNewGame } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
-import { BarChart3, Home, RotateCcw, ThumbsDown, ThumbsUp, Tv } from "lucide-react";
+import { BarChart3, Home, RotateCcw, ThumbsDown, ThumbsUp } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/stats")({
@@ -133,12 +133,6 @@ function Stats() {
                 SEASON
               </button>
             </div>
-            <Link to="/sideline">
-              <Button size="sm" variant="secondary" className="gap-1.5">
-                <Tv className="h-4 w-4" />
-                <span className="font-display text-xs hidden sm:inline">SIDELINE</span>
-              </Button>
-            </Link>
           </div>
         </div>
       </header>
@@ -187,8 +181,8 @@ function Stats() {
         {/* Per-play rows */}
         {stats.length === 0 ? (
           <div className="text-sm text-muted-foreground italic p-8 border border-dashed border-border rounded-lg text-center">
-            No calls logged {scope === "game" ? "this game" : "yet"}. Call plays on the sideline,
-            then tap the yard chips after each snap — stats build themselves.
+            No calls logged {scope === "game" ? "this game" : "yet"}. Run plays from the play sheet
+            and tap the result chips after each snap — stats build themselves.
           </div>
         ) : (
           <div className="space-y-1.5">
@@ -228,7 +222,7 @@ function Stats() {
         )}
 
         <p className="text-[10px] text-center uppercase tracking-widest text-muted-foreground pb-4">
-          Yards come from the quick chips on the sideline · good/bad from your thumbs
+          Yards come from the result chips in the huddle · gained = good, stopped = bad
         </p>
       </main>
     </div>

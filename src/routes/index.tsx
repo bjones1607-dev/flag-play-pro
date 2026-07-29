@@ -4,9 +4,11 @@ import type { DefenseType, Play, PlayTag } from "@/lib/types";
 import { PRESET_PLAYS } from "@/lib/plays";
 import { saveCustomPlays } from "@/lib/storage";
 import { ALL_TAGS, TAG_LABELS } from "@/lib/routes";
+import { liveStatsFromLog, suggestPlays } from "@/lib/suggest";
 import { FootballField } from "@/components/FootballField";
 import { HuddleView } from "@/components/HuddleView";
 import { LineupSwitcher } from "@/components/LineupSwitcher";
+import { SituationBar } from "@/components/SituationBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,28 +20,38 @@ import {
 import {
   BarChart3,
   BookOpen,
+  ChevronDown,
   Dumbbell,
+  Flag,
   Menu,
   Pencil,
   Search,
   Shield,
   Star,
-  Tv,
   Watch,
 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
-import { useAssignment, useCustomPlays, useFavorites, usePlayers } from "@/hooks/use-storage";
+import {
+  useAssignment,
+  useCallLog,
+  useCustomPlays,
+  useDrives,
+  useFavorites,
+  usePlayers,
+  useRecentCalls,
+  useSituation,
+} from "@/hooks/use-storage";
 import { decodePlayFromHash } from "@/lib/share";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Game Day Call Sheet — Flag 6v6" },
+      { title: "Game Day — Flag 6v6" },
       {
         name: "description",
         content:
-          "The game-day call sheet: scroll your play diagrams, tap one to show the kids fullscreen, and run the offense.",
+          "The one play sheet: live down & distance, coach suggestions, play diagrams, and one-tap results.",
       },
     ],
   }),
@@ -52,11 +64,17 @@ function GameDay() {
   const players = usePlayers();
   const assignment = useAssignment();
   const favorites = useFavorites();
+  const recent = useRecentCalls();
+  const { log, gameStart } = useCallLog();
+  const drives = useDrives();
+  const [situation, setSituation] = useSituation();
 
   const [search, setSearch] = useState("");
   const [activeTags, setActiveTags] = useState<Set<PlayTag>>(new Set());
   const [favOnly, setFavOnly] = useState(false);
   const [huddleIdx, setHuddleIdx] = useState<number | null>(null);
+  const [gameOpen, setGameOpen] = useState(false);
+  const [activePreset, setActivePreset] = useState<string | null>(null);
 
   // Hydrate a shared play from URL hash on first load
   useEffect(() => {
@@ -74,12 +92,33 @@ function GameDay() {
   }, []);
 
   const allPlays = useMemo(() => [...PRESET_PLAYS, ...customs], [customs]);
+  const basePlays = useMemo(
+    () => allPlays.filter((p) => p.defense === defense),
+    [allPlays, defense],
+  );
 
-  // Filter, then favorites first — this order drives the grid AND the huddle carousel.
-  const plays = useMemo(() => {
+  // Anticipatory suggestions — re-rank after every snap.
+  const liveStats = useMemo(() => liveStatsFromLog(log, gameStart), [log, gameStart]);
+  const suggested = useMemo(
+    () =>
+      suggestPlays(basePlays, situation, {
+        stats: liveStats,
+        isStarred: (id) => favorites.has(id),
+        recentIds: recent.map((r) => r.id),
+      }),
+    [basePlays, situation, liveStats, favorites, recent],
+  );
+
+  const filtering = search.trim() !== "" || activeTags.size > 0 || favOnly;
+  const showSuggested = !filtering;
+
+  // Filtered grid; favorites first. When the suggestion strip is showing,
+  // its four plays are excluded from the grid below to avoid duplicates.
+  const gridPlays = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const filtered = allPlays.filter((p) => {
-      if (p.defense !== defense) return false;
+    const suggestedIds = new Set(showSuggested ? suggested.suggestions.map((s) => s.play.id) : []);
+    const filtered = basePlays.filter((p) => {
+      if (suggestedIds.has(p.id)) return false;
       if (favOnly && !favorites.has(p.id)) return false;
       if (activeTags.size > 0) {
         const tags = new Set(p.tags ?? []);
@@ -94,7 +133,18 @@ function GameDay() {
       ...filtered.filter((p) => favorites.has(p.id)),
       ...filtered.filter((p) => !favorites.has(p.id)),
     ];
-  }, [allPlays, defense, search, activeTags, favOnly, favorites]);
+  }, [basePlays, search, activeTags, favOnly, favorites, showSuggested, suggested]);
+
+  // One flat list drives the huddle carousel: suggested first, then grid.
+  const carousel = useMemo(
+    () => (showSuggested ? [...suggested.suggestions.map((s) => s.play), ...gridPlays] : gridPlays),
+    [showSuggested, suggested, gridPlays],
+  );
+
+  const openHuddle = (playId: string) => {
+    const i = carousel.findIndex((p) => p.id === playId);
+    if (i >= 0) setHuddleIdx(i);
+  };
 
   const toggleTag = (t: PlayTag) => {
     setActiveTags((cur) => {
@@ -104,6 +154,8 @@ function GameDay() {
       return n;
     });
   };
+
+  const gameDrives = drives.drives.filter((d) => d.at >= gameStart);
 
   return (
     <div className="min-h-screen bg-background pb-8">
@@ -115,16 +167,10 @@ function GameDay() {
           <div>
             <h1 className="font-display text-2xl leading-none text-primary">FLAG · 6V6</h1>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Game day call sheet
+              Game day play sheet
             </p>
           </div>
           <div className="ml-auto flex gap-1">
-            <Link to="/sideline">
-              <Button variant="secondary" className="gap-1.5 px-3" aria-label="Open sideline mode">
-                <Tv className="h-4 w-4" />
-                <span className="font-display text-sm hidden sm:inline">SIDELINE</span>
-              </Button>
-            </Link>
             <Link to="/designer">
               <Button
                 variant="secondary"
@@ -143,18 +189,23 @@ function GameDay() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                  <Link to="/playsheet" className="flex items-center gap-2">
-                    <BookOpen className="h-4 w-4" /> 3x3 Zone Sheet
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/defense" className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" /> Defense (3-3 Zone)
+                  <Link to="/halftime" className="flex items-center gap-2">
+                    <Flag className="h-4 w-4" /> Halftime Card
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/stats" className="flex items-center gap-2">
                     <BarChart3 className="h-4 w-4" /> Play Stats
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/playsheet" className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" /> Printable Zone Sheet
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/defense" className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" /> Defense (3-3 Zone)
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -170,6 +221,61 @@ function GameDay() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+        </div>
+
+        {/* Game bar: score + situation, tap to expand full controls */}
+        <div className="px-4 pb-2">
+          <button
+            onClick={() => setGameOpen((v) => !v)}
+            className="w-full flex items-center gap-3 rounded-lg border border-border bg-secondary/40 px-3 py-2 text-left"
+            aria-expanded={gameOpen}
+            aria-label="Toggle game controls"
+          >
+            <div className="font-display text-lg text-primary leading-none">
+              US {situation.ourScore} · THEM {situation.oppScore}
+            </div>
+            <div className="flex-1 text-[11px] uppercase tracking-widest text-muted-foreground truncate">
+              {suggested.headline}
+            </div>
+            <ChevronDown
+              className={`h-4 w-4 text-muted-foreground transition ${gameOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+          {gameOpen && (
+            <div className="mt-2 space-y-2">
+              <SituationBar
+                situation={situation}
+                onChange={setSituation}
+                activePreset={activePreset}
+                onPreset={setActivePreset}
+              />
+              <LineupSwitcher />
+            </div>
+          )}
+          {/* Drive strips */}
+          {(gameDrives.length > 0 || drives.current.plays > 0) && (
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {gameDrives.map((d) => (
+                <span
+                  key={d.at}
+                  className={`text-[10px] px-1.5 py-0.5 rounded font-display tracking-wide ${
+                    d.result === "TD"
+                      ? "bg-primary/20 text-primary"
+                      : "bg-destructive/20 text-destructive"
+                  }`}
+                >
+                  {d.result} · {d.plays} plays · {d.yards > 0 ? "+" : ""}
+                  {d.yards} yds
+                </span>
+              ))}
+              {drives.current.plays > 0 && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded font-display tracking-wide bg-background/60 text-muted-foreground">
+                  THIS DRIVE · {drives.current.plays} plays · {drives.current.yards > 0 ? "+" : ""}
+                  {drives.current.yards} yds
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Defense toggle */}
@@ -199,7 +305,7 @@ function GameDay() {
         </div>
 
         {/* Search + filters */}
-        <div className="px-4 pb-3 space-y-2">
+        <div className="px-4 pb-3">
           <div className="flex flex-wrap items-center gap-1.5">
             <div className="relative flex-1 min-w-[140px]">
               <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -234,77 +340,82 @@ function GameDay() {
               </button>
             ))}
           </div>
-          <LineupSwitcher />
         </div>
       </header>
 
-      {/* Play grid */}
-      <main className="px-4 pt-4 max-w-6xl mx-auto">
-        {plays.length === 0 ? (
-          <div className="p-8 text-center text-muted-foreground">
-            No plays match.{" "}
-            <Button
-              variant="link"
-              onClick={() => {
-                setSearch("");
-                setActiveTags(new Set());
-                setFavOnly(false);
-              }}
-            >
-              Clear filters
-            </Button>
-          </div>
-        ) : (
-          <>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-display mb-2">
-              {plays.length} plays · tap one to show the kids · star your game-day list
+      <main className="px-4 pt-4 max-w-6xl mx-auto space-y-5">
+        {/* Coach says: anticipatory suggestions for the current drive */}
+        {showSuggested && suggested.suggestions.length > 0 && (
+          <section>
+            <div className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 mb-2">
+              <div className="font-display text-lg text-primary leading-none">
+                {suggested.headline}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                {suggested.detail}
+              </div>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-              {plays.map((p, i) => (
-                <div
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {suggested.suggestions.map(({ play: p, reason }) => (
+                <PlayCard
                   key={p.id}
-                  className="rounded-lg bg-secondary/60 hover:bg-secondary border border-border overflow-hidden transition"
-                >
-                  <div className="flex items-center gap-1.5 px-2 py-1.5">
-                    <button
-                      onClick={() => favorites.toggle(p.id)}
-                      className="p-1 shrink-0"
-                      aria-label={favorites.has(p.id) ? `Unstar ${p.name}` : `Star ${p.name}`}
-                    >
-                      <Star
-                        className={`h-4 w-4 ${favorites.has(p.id) ? "fill-primary text-primary" : "text-muted-foreground"}`}
-                      />
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-display text-sm leading-tight truncate">{p.name}</div>
-                      <div className="text-[9px] uppercase tracking-widest text-muted-foreground truncate">
-                        {p.formation}
-                        {p.playType === "run" && " · RUN"}
-                        {p.custom && " · CUSTOM"}
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setHuddleIdx(i)}
-                    className="block w-full text-left px-1.5 pb-1.5 active:scale-[0.98] transition"
-                    aria-label={`Show ${p.name} fullscreen`}
-                  >
-                    <FootballField play={p} assignment={assignment} players={players} />
-                    <div className="px-1 pt-1.5 text-[10px] text-muted-foreground leading-snug line-clamp-2">
-                      {p.keyRead || p.purpose}
-                    </div>
-                  </button>
-                </div>
+                  play={p}
+                  caption={reason}
+                  highlight
+                  starred={favorites.has(p.id)}
+                  onStar={() => favorites.toggle(p.id)}
+                  onOpen={() => openHuddle(p.id)}
+                  assignment={assignment}
+                  players={players}
+                />
               ))}
             </div>
-          </>
+          </section>
         )}
+
+        {/* Full sheet */}
+        <section>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-display mb-2">
+            {showSuggested ? "FULL SHEET" : `${gridPlays.length} PLAYS`} · tap a play to show the
+            kids · record the result right in the huddle
+          </div>
+          {gridPlays.length === 0 && !showSuggested ? (
+            <div className="p-8 text-center text-muted-foreground">
+              No plays match.{" "}
+              <Button
+                variant="link"
+                onClick={() => {
+                  setSearch("");
+                  setActiveTags(new Set());
+                  setFavOnly(false);
+                }}
+              >
+                Clear filters
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              {gridPlays.map((p) => (
+                <PlayCard
+                  key={p.id}
+                  play={p}
+                  caption={p.keyRead || p.purpose}
+                  starred={favorites.has(p.id)}
+                  onStar={() => favorites.toggle(p.id)}
+                  onOpen={() => openHuddle(p.id)}
+                  assignment={assignment}
+                  players={players}
+                />
+              ))}
+            </div>
+          )}
+        </section>
       </main>
 
-      {/* Fullscreen huddle */}
+      {/* Fullscreen huddle with one-tap results */}
       <HuddleView
         open={huddleIdx !== null}
-        plays={plays}
+        plays={carousel}
         index={huddleIdx ?? 0}
         assignment={assignment}
         players={players}
@@ -313,6 +424,64 @@ function GameDay() {
         onIndex={(i) => setHuddleIdx(i)}
         onClose={() => setHuddleIdx(null)}
       />
+    </div>
+  );
+}
+
+function PlayCard({
+  play,
+  caption,
+  highlight,
+  starred,
+  onStar,
+  onOpen,
+  assignment,
+  players,
+}: {
+  play: Play;
+  caption: string;
+  highlight?: boolean;
+  starred: boolean;
+  onStar: () => void;
+  onOpen: () => void;
+  assignment: ReturnType<typeof useAssignment>;
+  players: ReturnType<typeof usePlayers>;
+}) {
+  return (
+    <div
+      className={`rounded-lg bg-secondary/60 hover:bg-secondary border overflow-hidden transition ${
+        highlight ? "border-primary/60" : "border-border"
+      }`}
+    >
+      <div className="flex items-center gap-1.5 px-2 py-1.5">
+        <button
+          onClick={onStar}
+          className="p-1 shrink-0"
+          aria-label={starred ? `Unstar ${play.name}` : `Star ${play.name}`}
+        >
+          <Star
+            className={`h-4 w-4 ${starred ? "fill-primary text-primary" : "text-muted-foreground"}`}
+          />
+        </button>
+        <div className="flex-1 min-w-0">
+          <div className="font-display text-sm leading-tight truncate">{play.name}</div>
+          <div className="text-[9px] uppercase tracking-widest text-muted-foreground truncate">
+            {play.formation}
+            {play.playType === "run" && " · RUN"}
+            {play.custom && " · CUSTOM"}
+          </div>
+        </div>
+      </div>
+      <button
+        onClick={onOpen}
+        className="block w-full text-left px-1.5 pb-1.5 active:scale-[0.98] transition"
+        aria-label={`Show ${play.name} fullscreen`}
+      >
+        <FootballField play={play} assignment={assignment} players={players} />
+        <div className="px-1 pt-1.5 text-[10px] text-muted-foreground leading-snug line-clamp-2">
+          {caption}
+        </div>
+      </button>
     </div>
   );
 }
