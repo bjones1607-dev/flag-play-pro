@@ -37,7 +37,18 @@ import {
   ImageDown,
   Tv,
   BookOpen,
+  Menu,
+  Shield,
+  BarChart3,
+  Dumbbell,
+  Watch,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Toaster } from "@/components/ui/sonner";
 import { useAssignment, useCustomPlays, useFavorites, usePlayers } from "@/hooks/use-storage";
 import { decodePlayFromHash, downloadDataUrl, encodePlayToUrl, svgToPngDataUrl } from "@/lib/share";
@@ -254,6 +265,35 @@ function Index() {
                 <span className="font-display text-sm hidden sm:inline">SIDELINE</span>
               </Button>
             </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="icon" aria-label="More coaching tools">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to="/defense" className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" /> Defense (3-3 Zone)
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/stats" className="flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" /> Play Stats
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/practice" className="flex items-center gap-2">
+                    <Dumbbell className="h-4 w-4" /> Practice Plan
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/wristband" className="flex items-center gap-2">
+                    <Watch className="h-4 w-4" /> Wristband Cards
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="secondary" className="gap-1.5 px-3">

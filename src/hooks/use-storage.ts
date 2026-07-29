@@ -5,8 +5,10 @@ import {
   EVENTS,
   loadActiveLineupId,
   loadAssignment,
+  loadCallLog,
   loadCustomPlays,
   loadFavorites,
+  loadGameStart,
   loadLineups,
   loadPlayers,
   loadRecentCalls,
@@ -15,6 +17,7 @@ import {
   saveFavorites,
   saveSituation,
   updateLineupFromCurrent,
+  type CallLogEntry,
   type Lineup,
   type RecentCall,
   type Situation,
@@ -113,6 +116,20 @@ export function useRecentCalls(): RecentCall[] {
     return subscribe([EVENTS.RECENT], () => setV(loadRecentCalls()));
   }, []);
   return v;
+}
+
+export function useCallLog(): { log: CallLogEntry[]; gameStart: number } {
+  const [log, setLog] = useState<CallLogEntry[]>([]);
+  const [gameStart, setGameStart] = useState(0);
+  useEffect(() => {
+    const refresh = () => {
+      setLog(loadCallLog());
+      setGameStart(loadGameStart());
+    };
+    refresh();
+    return subscribe([EVENTS.CALLLOG], refresh);
+  }, []);
+  return { log, gameStart };
 }
 
 export function useSituation(): [Situation, (s: Situation) => void] {

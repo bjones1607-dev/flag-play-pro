@@ -5,18 +5,43 @@ import { PRESET_PLAYS } from "@/lib/plays";
 import { FootballField } from "@/components/FootballField";
 import { SituationBar, SITUATION_PRESETS } from "@/components/SituationBar";
 import { LineupSwitcher } from "@/components/LineupSwitcher";
-import { useAssignment, useCustomPlays, useFavorites, usePlayers, useRecentCalls, useSituation } from "@/hooks/use-storage";
-import { pushRecentCall, saveRecentCalls, tagLastCall } from "@/lib/storage";
+import {
+  useAssignment,
+  useCustomPlays,
+  useFavorites,
+  usePlayers,
+  useRecentCalls,
+  useSituation,
+} from "@/hooks/use-storage";
+import { pushRecentCall, saveRecentCalls, setYardsOnLastCall, tagLastCall } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
-import { BookOpen, ChevronLeft, ChevronRight, Home, Printer, Star, ThumbsDown, ThumbsUp, Trash2, Play as PlayIcon, RotateCw } from "lucide-react";
+import {
+  BarChart3,
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Home,
+  Printer,
+  Shield,
+  Star,
+  ThumbsDown,
+  ThumbsUp,
+  Trash2,
+  Play as PlayIcon,
+  RotateCw,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/sideline")({
   head: () => ({
     meta: [
       { title: "Sideline — Flag 6v6" },
-      { name: "description", content: "Game-day sideline view: down/distance, situational plays, big field, and last-call tracking." },
+      {
+        name: "description",
+        content:
+          "Game-day sideline view: down/distance, situational plays, big field, and last-call tracking.",
+      },
     ],
   }),
   component: Sideline,
@@ -43,7 +68,11 @@ function Sideline() {
         const want = new Set(SITUATION_PRESETS[activePreset]?.tags ?? []);
         const tags = new Set(p.tags ?? []);
         let any = false;
-        for (const t of want) if (tags.has(t)) { any = true; break; }
+        for (const t of want)
+          if (tags.has(t)) {
+            any = true;
+            break;
+          }
         if (!any) return false;
       }
       return true;
@@ -52,19 +81,46 @@ function Sideline() {
 
   const [selectedId, setSelectedId] = useState<string>("");
   useEffect(() => {
-    if (filtered.length === 0) { setSelectedId(""); return; }
+    if (filtered.length === 0) {
+      setSelectedId("");
+      return;
+    }
     if (!filtered.find((p) => p.id === selectedId)) setSelectedId(filtered[0].id);
   }, [filtered, selectedId]);
 
   const current: Play | undefined = filtered.find((p) => p.id === selectedId);
   const idx = current ? filtered.findIndex((p) => p.id === current.id) : -1;
   const [animKey, setAnimKey] = useState(0);
-  useEffect(() => { setAnimKey((k) => k + 1); }, [selectedId]);
+  useEffect(() => {
+    setAnimKey((k) => k + 1);
+  }, [selectedId]);
 
   const call = (p: Play) => {
     pushRecentCall({ id: p.id, name: p.name });
     setSelectedId(p.id);
     toast.success(`Called: ${p.name}`);
+  };
+
+  // Quick yards: record on the last call and walk the ball forward/back.
+  const recordYards = (y: number) => {
+    setYardsOnLastCall(y);
+    setSituation({
+      ...situation,
+      yardLine: Math.max(1, Math.min(49, situation.yardLine + y)),
+    });
+    toast(`${y > 0 ? "+" : ""}${y} yds on ${recent[0]?.name ?? "last call"}`);
+  };
+  const recordTouchdown = () => {
+    setYardsOnLastCall(50 - situation.yardLine);
+    tagLastCall("good");
+    toast.success("TOUCHDOWN — +6");
+    setSituation({
+      ...situation,
+      ourScore: situation.ourScore + 6,
+      series: "to-mid",
+      down: 1,
+      yardLine: 5,
+    });
   };
 
   const advanceDown = (good: boolean) => {
@@ -112,24 +168,52 @@ function Sideline() {
           </Link>
           <div>
             <h1 className="font-display text-xl leading-none text-primary">SIDELINE</h1>
-            <p className="text-[9px] uppercase tracking-widest text-muted-foreground">Game-day call mode</p>
+            <p className="text-[9px] uppercase tracking-widest text-muted-foreground">
+              Game-day call mode
+            </p>
           </div>
 
           <Link to="/playsheet" className="ml-auto">
-            <Button size="sm" variant="secondary" className="gap-1.5" aria-label="Open 3x3 zone play sheet">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="gap-1.5"
+              aria-label="Open 3x3 zone play sheet"
+            >
               <BookOpen className="h-4 w-4" />
               <span className="font-display text-xs hidden sm:inline">ZONE SHEET</span>
+            </Button>
+          </Link>
+          <Link to="/defense">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="gap-1.5"
+              aria-label="Open defense call sheet"
+            >
+              <Shield className="h-4 w-4" />
+              <span className="font-display text-xs hidden sm:inline">DEFENSE</span>
+            </Button>
+          </Link>
+          <Link to="/stats">
+            <Button size="sm" variant="secondary" className="gap-1.5" aria-label="Open play stats">
+              <BarChart3 className="h-4 w-4" />
+              <span className="font-display text-xs hidden sm:inline">STATS</span>
             </Button>
           </Link>
           <div className="grid grid-cols-2 bg-secondary rounded-lg p-1 text-xs">
             <button
               onClick={() => setDefense("zone")}
               className={`px-3 py-1 rounded-md font-display tracking-wide ${defense === "zone" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-            >ZONE</button>
+            >
+              ZONE
+            </button>
             <button
               onClick={() => setDefense("man")}
               className={`px-3 py-1 rounded-md font-display tracking-wide ${defense === "man" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-            >MAN</button>
+            >
+              MAN
+            </button>
           </div>
           <button
             onClick={() => setFavOnly((v) => !v)}
@@ -167,7 +251,10 @@ function Sideline() {
           {filtered.length === 0 && (
             <div className="text-sm text-muted-foreground italic p-4 border border-dashed border-border rounded-lg text-center">
               No plays match. {favOnly && "Star plays on the home page or "}
-              <button onClick={() => setFavOnly(false)} className="underline">show all</button>.
+              <button onClick={() => setFavOnly(false)} className="underline">
+                show all
+              </button>
+              .
             </div>
           )}
           {filtered.map((p, i) => (
@@ -185,17 +272,23 @@ function Sideline() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-display text-base leading-tight truncate flex items-center gap-1.5">
-                  {favorites.has(p.id) && <Star className="h-3.5 w-3.5 fill-primary text-primary" />}
+                  {favorites.has(p.id) && (
+                    <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+                  )}
                   {p.name}
                 </div>
                 <div className="text-[11px] text-muted-foreground truncate">
-                  {p.formation}{p.keyRead ? ` · ${p.keyRead}` : ""}
+                  {p.formation}
+                  {p.keyRead ? ` · ${p.keyRead}` : ""}
                 </div>
               </div>
               {p.tags && p.tags.length > 0 && (
                 <div className="hidden xl:flex gap-1">
                   {p.tags.slice(0, 2).map((t) => (
-                    <span key={t} className="text-[9px] px-1.5 py-0.5 rounded bg-background/60 font-display tracking-wide">
+                    <span
+                      key={t}
+                      className="text-[9px] px-1.5 py-0.5 rounded bg-background/60 font-display tracking-wide"
+                    >
                       {t.toUpperCase()}
                     </span>
                   ))}
@@ -210,8 +303,13 @@ function Sideline() {
           {current ? (
             <>
               <div className="flex items-center gap-2">
-                <Button size="icon" variant="secondary"
-                  onClick={() => setSelectedId(filtered[(idx - 1 + filtered.length) % filtered.length].id)}>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  onClick={() =>
+                    setSelectedId(filtered[(idx - 1 + filtered.length) % filtered.length].id)
+                  }
+                >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <div className="flex-1 text-center min-w-0">
@@ -222,8 +320,11 @@ function Sideline() {
                     {current.formation} · {idx + 1}/{filtered.length}
                   </div>
                 </div>
-                <Button size="icon" variant="secondary"
-                  onClick={() => setSelectedId(filtered[(idx + 1) % filtered.length].id)}>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  onClick={() => setSelectedId(filtered[(idx + 1) % filtered.length].id)}
+                >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -250,7 +351,9 @@ function Sideline() {
 
               {current.keyRead && (
                 <div className="bg-card rounded-lg p-2.5">
-                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-display">Key Read</div>
+                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-display">
+                    Key Read
+                  </div>
                   <div className="text-sm leading-snug">{current.keyRead}</div>
                 </div>
               )}
@@ -258,50 +361,117 @@ function Sideline() {
               {/* Last called + result */}
               <div className="rounded-lg border border-border bg-secondary/40 p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">Last Called</div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">
+                    Last Called
+                  </div>
                   {recent.length > 0 && (
-                    <button onClick={() => { saveRecentCalls([]); toast("Cleared"); }}
-                      className="text-[10px] text-muted-foreground hover:text-destructive flex items-center gap-1">
+                    <button
+                      onClick={() => {
+                        saveRecentCalls([]);
+                        toast("Cleared");
+                      }}
+                      className="text-[10px] text-muted-foreground hover:text-destructive flex items-center gap-1"
+                    >
                       <Trash2 className="h-3 w-3" /> Clear
                     </button>
                   )}
                 </div>
                 {recent[0] ? (
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 font-display text-lg leading-none truncate">{recent[0].name}</div>
-                    <Button size="sm" onClick={() => { tagLastCall("good"); advanceDown(true); }}>
-                      <ThumbsUp className="h-4 w-4 mr-1.5" /> GOOD
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={() => { tagLastCall("bad"); advanceDown(false); toast("Marked bad — next down"); }}>
-                      <ThumbsDown className="h-4 w-4 mr-1.5" /> NO GAIN
-                    </Button>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 font-display text-lg leading-none truncate">
+                        {recent[0].name}
+                        {typeof recent[0].yards === "number" && (
+                          <span className="ml-2 text-sm text-primary">
+                            {recent[0].yards > 0 ? "+" : ""}
+                            {recent[0].yards} yds
+                          </span>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          tagLastCall("good");
+                          advanceDown(true);
+                        }}
+                      >
+                        <ThumbsUp className="h-4 w-4 mr-1.5" /> GOOD
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          tagLastCall("bad");
+                          advanceDown(false);
+                          toast("Marked bad — next down");
+                        }}
+                      >
+                        <ThumbsDown className="h-4 w-4 mr-1.5" /> NO GAIN
+                      </Button>
+                    </div>
+                    {/* Quick yards gained — feeds the stats page and moves the ball */}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">
+                        Yds
+                      </span>
+                      {[-3, 0, 3, 5, 8, 12, 20].map((y) => (
+                        <button
+                          key={y}
+                          onClick={() => recordYards(y)}
+                          className="text-[11px] px-2.5 py-1.5 rounded-full font-display tracking-wider bg-secondary text-muted-foreground hover:bg-secondary/70 active:scale-95 transition"
+                        >
+                          {y > 0 ? `+${y}` : y}
+                        </button>
+                      ))}
+                      <button
+                        onClick={recordTouchdown}
+                        className="text-[11px] px-2.5 py-1.5 rounded-full font-display tracking-wider bg-primary text-primary-foreground active:scale-95 transition"
+                      >
+                        TD
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="text-sm text-muted-foreground italic">No call yet — pick a play on the left.</div>
+                  <div className="text-sm text-muted-foreground italic">
+                    No call yet — pick a play on the left.
+                  </div>
                 )}
                 {recent.length > 1 && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {recent.slice(1, 8).map((r) => (
-                      <span key={r.at} className={`text-[10px] px-1.5 py-0.5 rounded font-display tracking-wide ${
-                        r.result === "good" ? "bg-primary/20 text-primary" :
-                        r.result === "bad" ? "bg-destructive/20 text-destructive" :
-                        "bg-background/40 text-muted-foreground"
-                      }`}>{r.name}</span>
+                      <span
+                        key={r.at}
+                        className={`text-[10px] px-1.5 py-0.5 rounded font-display tracking-wide ${
+                          r.result === "good"
+                            ? "bg-primary/20 text-primary"
+                            : r.result === "bad"
+                              ? "bg-destructive/20 text-destructive"
+                              : "bg-background/40 text-muted-foreground"
+                        }`}
+                      >
+                        {r.name}
+                      </span>
                     ))}
                   </div>
                 )}
               </div>
             </>
           ) : (
-            <div className="text-muted-foreground italic p-8 text-center">Pick a play to get started.</div>
+            <div className="text-muted-foreground italic p-8 text-center">
+              Pick a play to get started.
+            </div>
           )}
         </section>
       </main>
 
       {/* Wristband print layout — only visible when printing */}
       <div className="wristband-print hidden">
-        <div className="wb-cell" style={{ gridColumn: "1 / -1", textAlign: "center", fontSize: "14pt" }}>
-          {defense.toUpperCase()} · {activePreset ? SITUATION_PRESETS[activePreset].label : "ALL SITUATIONS"}
+        <div
+          className="wb-cell"
+          style={{ gridColumn: "1 / -1", textAlign: "center", fontSize: "14pt" }}
+        >
+          {defense.toUpperCase()} ·{" "}
+          {activePreset ? SITUATION_PRESETS[activePreset].label : "ALL SITUATIONS"}
         </div>
         {filtered.slice(0, 16).map((p, i) => (
           <div key={p.id} className="wb-cell">

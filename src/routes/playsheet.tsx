@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import type { Play } from "@/lib/types";
 import { PRESET_PLAYS } from "@/lib/plays";
-import { KID_RULES, PLAYSHEET_SECTIONS, QB_GOLDEN_RULE } from "@/lib/playsheet";
+import { KID_RULES, PLAYSHEET_SECTIONS, playsheetOrder, QB_GOLDEN_RULE } from "@/lib/playsheet";
 import { FootballField } from "@/components/FootballField";
 import { HuddleView } from "@/components/HuddleView";
 import { LineupSwitcher } from "@/components/LineupSwitcher";
@@ -36,23 +36,9 @@ function Playsheet() {
     return m;
   }, []);
 
-  // Flat, deduped play order across sections — drives both the wristband
-  // numbers and the fullscreen huddle carousel.
-  const flatPlays = useMemo(() => {
-    const seen = new Set<string>();
-    const list: Play[] = [];
-    for (const s of PLAYSHEET_SECTIONS) {
-      for (const id of s.playIds) {
-        if (seen.has(id)) continue;
-        const p = byId.get(id);
-        if (p) {
-          seen.add(id);
-          list.push(p);
-        }
-      }
-    }
-    return list;
-  }, [byId]);
+  // Flat, deduped play order across sections — drives the wristband numbers,
+  // the fullscreen huddle carousel, and the printed wristband cards.
+  const flatPlays = useMemo(() => playsheetOrder(PRESET_PLAYS), []);
 
   const numbered = useMemo(() => {
     const m = new Map<string, number>();

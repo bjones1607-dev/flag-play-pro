@@ -134,6 +134,7 @@ export interface RecentCall {
   name: string;
   at: number;
   result?: "good" | "bad";
+  yards?: number;
 }
 export const loadRecentCalls = (): RecentCall[] => {
   if (typeof window === "undefined") return [];
@@ -157,6 +158,63 @@ export const pushRecentCall = (play: { id: string; name: string }) => {
     return;
   }
   saveRecentCalls([{ id: play.id, name: play.name, at: now }, ...list]);
+  appendCallLog({ at: now, playId: play.id, name: play.name });
+};
+
+// ===== Call log: permanent per-call history for play stats =====
+// RecentCalls is a short UI list; the log keeps every call (capped at 500)
+// with result + yards so the stats page can show what actually works.
+export interface CallLogEntry {
+  at: number;
+  playId: string;
+  name: string;
+  result?: "good" | "bad";
+  yards?: number;
+}
+const CALLLOG_KEY = "ff_call_log_v1";
+const GAME_START_KEY = "ff_game_start_v1";
+const CALLLOG_EVENT = "ff:calllog-changed";
+
+export const loadCallLog = (): CallLogEntry[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem(CALLLOG_KEY) || "[]");
+  } catch {
+    return [];
+  }
+};
+export const saveCallLog = (log: CallLogEntry[]) => {
+  localStorage.setItem(CALLLOG_KEY, JSON.stringify(log.slice(-500)));
+  emit(CALLLOG_EVENT);
+};
+export const appendCallLog = (entry: CallLogEntry) => {
+  saveCallLog([...loadCallLog(), entry]);
+};
+export const updateLastCallLog = (patch: Partial<Pick<CallLogEntry, "result" | "yards">>) => {
+  const log = loadCallLog();
+  if (log.length === 0) return;
+  log[log.length - 1] = { ...log[log.length - 1], ...patch };
+  saveCallLog(log);
+};
+
+// Game marker: stats can be scoped to "this game" (calls since the marker).
+export const loadGameStart = (): number => {
+  if (typeof window === "undefined") return 0;
+  return Number(localStorage.getItem(GAME_START_KEY) || 0);
+};
+export const startNewGame = () => {
+  localStorage.setItem(GAME_START_KEY, String(Date.now()));
+  emit(CALLLOG_EVENT);
+};
+
+// Attach yards gained to the most recent call (recent list + log).
+export const setYardsOnLastCall = (yards: number) => {
+  const list = loadRecentCalls();
+  if (list[0]) {
+    list[0] = { ...list[0], yards };
+    saveRecentCalls(list);
+  }
+  updateLastCallLog({ yards });
 };
 
 // ===== Game-day situation =====
@@ -203,6 +261,7 @@ export const tagLastCall = (result: "good" | "bad") => {
   if (!list[0]) return;
   list[0] = { ...list[0], result };
   saveRecentCalls(list);
+  updateLastCallLog({ result });
 };
 
 export const EVENTS = {
@@ -213,4 +272,5 @@ export const EVENTS = {
   RECENT: RECENT_EVENT,
   SITUATION: "ff:situation-changed",
   LINEUPS: LINEUP_EVENT,
+  CALLLOG: CALLLOG_EVENT,
 };
