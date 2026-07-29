@@ -169,7 +169,10 @@ export const DEFENSIVE_CALLS: DefensiveCall[] = [
         rule: "Pick your kid before the snap — point at him and call his number. Go everywhere he goes.",
       },
       { pos: "Deep Middle (FREE)", rule: "You have no kid. Stay deepest, help whoever gets beat." },
-      { pos: "Everyone", rule: "If your kid blocks, you're free — go find the ball." },
+      {
+        pos: "Everyone",
+        rule: "No one can block you in this league — stay glued to your kid until the ball is up, then go get it.",
+      },
     ],
     defenders: [
       { x: 12, y: 64, label: "M1", arrow: { toX: 12, toY: 69 } },
