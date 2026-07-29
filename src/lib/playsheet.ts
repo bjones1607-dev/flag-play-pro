@@ -2,10 +2,31 @@
 // League rules: 50-yard field · 3 downs to reach midfield · then 4 downs to score.
 // Sections follow that drive structure so play calls match the game state.
 
+import type { Play } from "./types";
+
 export interface PlaysheetSection {
   title: string;
   subtitle: string;
   playIds: string[];
+}
+
+// Flat, deduped sheet order — the same numbering the play sheet and
+// wristband cards use.
+export function playsheetOrder(all: Play[]): Play[] {
+  const byId = new Map(all.map((p) => [p.id, p]));
+  const seen = new Set<string>();
+  const list: Play[] = [];
+  for (const s of PLAYSHEET_SECTIONS) {
+    for (const id of s.playIds) {
+      if (seen.has(id)) continue;
+      const p = byId.get(id);
+      if (p) {
+        seen.add(id);
+        list.push(p);
+      }
+    }
+  }
+  return list;
 }
 
 export const KID_RULES: { name: string; rule: string }[] = [
