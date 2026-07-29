@@ -7,12 +7,14 @@ import { SituationBar, SITUATION_PRESETS } from "@/components/SituationBar";
 import { LineupSwitcher } from "@/components/LineupSwitcher";
 import {
   useAssignment,
+  useCallLog,
   useCustomPlays,
   useFavorites,
   usePlayers,
   useRecentCalls,
   useSituation,
 } from "@/hooks/use-storage";
+import { liveStatsFromLog, suggestPlays } from "@/lib/suggest";
 import { pushRecentCall, saveRecentCalls, setYardsOnLastCall, tagLastCall } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
@@ -47,6 +49,8 @@ export const Route = createFileRoute("/sideline")({
   component: Sideline,
 });
 
+type ListMode = "suggested" | "starred" | "all";
+
 function Sideline() {
   const [defense, setDefense] = useState<DefenseType>("zone");
   const [customs] = useCustomPlays();
@@ -54,16 +58,38 @@ function Sideline() {
   const assignment = useAssignment();
   const favorites = useFavorites();
   const recent = useRecentCalls();
+  const { log, gameStart } = useCallLog();
   const [situation, setSituation] = useSituation();
   const [activePreset, setActivePreset] = useState<string | null>(null);
-  const [favOnly, setFavOnly] = useState(true);
+  const [mode, setMode] = useState<ListMode>("suggested");
 
   const allPlays = useMemo(() => [...PRESET_PLAYS, ...customs], [customs]);
 
+  const basePlays = useMemo(
+    () => allPlays.filter((p) => p.defense === defense),
+    [allPlays, defense],
+  );
+
+  // Anticipatory suggestions: re-rank on every situation or stat change.
+  const liveStats = useMemo(() => liveStatsFromLog(log, gameStart), [log, gameStart]);
+  const suggested = useMemo(
+    () =>
+      suggestPlays(basePlays, situation, {
+        stats: liveStats,
+        isStarred: (id) => favorites.has(id),
+        recentIds: recent.map((r) => r.id),
+      }),
+    [basePlays, situation, liveStats, favorites, recent],
+  );
+  const reasonById = useMemo(
+    () => new Map(suggested.suggestions.map((s) => [s.play.id, s.reason])),
+    [suggested],
+  );
+
   const filtered = useMemo(() => {
-    return allPlays.filter((p) => {
-      if (p.defense !== defense) return false;
-      if (favOnly && !favorites.has(p.id)) return false;
+    if (mode === "suggested") return suggested.suggestions.map((s) => s.play);
+    return basePlays.filter((p) => {
+      if (mode === "starred" && !favorites.has(p.id)) return false;
       if (activePreset) {
         const want = new Set(SITUATION_PRESETS[activePreset]?.tags ?? []);
         const tags = new Set(p.tags ?? []);
@@ -77,7 +103,7 @@ function Sideline() {
       }
       return true;
     });
-  }, [allPlays, defense, favOnly, favorites, activePreset]);
+  }, [mode, suggested, basePlays, favorites, activePreset]);
 
   const [selectedId, setSelectedId] = useState<string>("");
   useEffect(() => {
@@ -196,12 +222,6 @@ function Sideline() {
             </button>
           </div>
           <button
-            onClick={() => setFavOnly((v) => !v)}
-            className={`text-[11px] px-2.5 py-1.5 rounded-full font-display tracking-wider flex items-center gap-1 ${favOnly ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
-          >
-            <Star className={`h-3 w-3 ${favOnly ? "fill-primary-foreground" : ""}`} /> GAME DAY
-          </button>
-          <button
             onClick={() => window.print()}
             className="text-[11px] px-2.5 py-1.5 rounded-full font-display tracking-wider bg-secondary text-muted-foreground flex items-center gap-1"
             aria-label="Print wristband"
@@ -225,16 +245,59 @@ function Sideline() {
       <main className="px-4 py-4 grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-4 no-print">
         {/* Left: call list */}
         <section className="space-y-2 lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto pr-1">
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">
-            {filtered.length} plays · {activePreset ? SITUATION_PRESETS[activePreset].label : "ALL"}
+          {/* Mode tabs: anticipatory suggestions / starred / everything */}
+          <div className="grid grid-cols-3 bg-secondary rounded-lg p-1 text-xs">
+            {(
+              [
+                ["suggested", "SUGGESTED"],
+                ["starred", "★ STARRED"],
+                ["all", "ALL"],
+              ] as [ListMode, string][]
+            ).map(([m, label]) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className={`py-1.5 rounded-md font-display tracking-wide ${
+                  mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
+
+          {mode === "suggested" ? (
+            <div className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2">
+              <div className="font-display text-base text-primary leading-none">
+                {suggested.headline}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                {suggested.detail}
+              </div>
+            </div>
+          ) : (
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">
+              {filtered.length} plays ·{" "}
+              {activePreset ? SITUATION_PRESETS[activePreset].label : "ALL"}
+            </div>
+          )}
+
           {filtered.length === 0 && (
             <div className="text-sm text-muted-foreground italic p-4 border border-dashed border-border rounded-lg text-center">
-              No plays match. {favOnly && "Star plays on the home page or "}
-              <button onClick={() => setFavOnly(false)} className="underline">
-                show all
-              </button>
-              .
+              No plays match.{" "}
+              {mode === "starred" ? (
+                <>
+                  Star plays on the call sheet or{" "}
+                  <button onClick={() => setMode("all")} className="underline">
+                    show all
+                  </button>
+                  .
+                </>
+              ) : (
+                <button onClick={() => setMode("all")} className="underline">
+                  Show all plays.
+                </button>
+              )}
             </div>
           )}
           {filtered.map((p, i) => (
@@ -258,8 +321,9 @@ function Sideline() {
                   {p.name}
                 </div>
                 <div className="text-[11px] text-muted-foreground truncate">
-                  {p.formation}
-                  {p.keyRead ? ` · ${p.keyRead}` : ""}
+                  {mode === "suggested"
+                    ? `${p.formation} · ${reasonById.get(p.id) ?? ""}`
+                    : `${p.formation}${p.keyRead ? ` · ${p.keyRead}` : ""}`}
                 </div>
               </div>
               {p.tags && p.tags.length > 0 && (
