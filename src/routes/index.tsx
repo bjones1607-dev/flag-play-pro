@@ -12,7 +12,14 @@ import { HuddleView } from "@/components/HuddleView";
 import { CallSheet } from "@/components/CallSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Shuffle,
@@ -228,9 +235,15 @@ function Index() {
               plays={allPlays.filter((p) => p.defense === defense)}
               onSelect={setSelectedId}
               onShowHuddle={() => setHuddleOpen(true)}
+              assignment={assignment}
+              players={players}
             />
             <Link to="/playsheet">
-              <Button variant="secondary" className="gap-1.5 px-3" aria-label="Open 3x3 zone play sheet">
+              <Button
+                variant="secondary"
+                className="gap-1.5 px-3"
+                aria-label="Open 3x3 zone play sheet"
+              >
                 <BookOpen className="h-4 w-4" />
                 <span className="font-display text-sm hidden sm:inline">ZONE SHEET</span>
               </Button>
@@ -276,7 +289,8 @@ function Index() {
                 <SheetHeader>
                   <SheetTitle className="font-display text-2xl">{builderTitle}</SheetTitle>
                   <SheetDescription className="sr-only">
-                    Drag receivers and the QB to position them, pick a route for each player, and save your custom play.
+                    Drag receivers and the QB to position them, pick a route for each player, and
+                    save your custom play.
                   </SheetDescription>
                 </SheetHeader>
                 <div className="mt-4">
