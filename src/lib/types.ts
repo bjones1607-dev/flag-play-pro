@@ -19,7 +19,7 @@ export type PassRoute =
   | "delay"
   | "swing"
   | "wheel"
-  // Center-specialty short routes (flag football)
+  // Center-specialty routes (flag football — the snapper is fully eligible)
   | "shovel"
   | "stick"
   | "sneak"
@@ -27,7 +27,9 @@ export type PassRoute =
   | "leak"
   | "sit"
   | "chip"
-  | "rub";
+  | "rub"
+  | "pop"
+  | "seam";
 
 // Run paths (used when a player is the ball carrier on a run play)
 export type RunRoute = "dive" | "sweep" | "counter";

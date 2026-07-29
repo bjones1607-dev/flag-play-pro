@@ -55,12 +55,12 @@ export const PLAYSHEET_SECTIONS: PlaysheetSection[] = [
   {
     title: "PART 1 · GET TO MIDFIELD",
     subtitle: "3 downs to cross midfield — easy throws, easy yards",
-    playIds: ["zb-pizza", "zb-oreo", "zb-popcorn", "zb-waves"],
+    playIds: ["zb-pizza", "zb-oreo", "zb-popcorn", "zb-waves", "zb-secret-agent"],
   },
   {
     title: "PART 2 · GO SCORE",
     subtitle: "4 downs to the end zone — attack the seams and sidelines",
-    playIds: ["zb-rocket", "zb-rainbow", "zb-ladder"],
+    playIds: ["zb-rocket", "zb-rainbow", "zb-ladder", "zb-periscope"],
   },
   {
     title: "MONEY DOWNS",
