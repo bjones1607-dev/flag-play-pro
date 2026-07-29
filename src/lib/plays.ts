@@ -651,7 +651,7 @@ export const PRESET_PLAYS: Play[] = [
     receivers: [
       { id: "r1", ...POS.farLeft, route: "curl", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "flat", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "sit", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "go", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
@@ -667,12 +667,12 @@ export const PRESET_PLAYS: Play[] = [
     keyRead:
       "Throw the boomerang (screen) fast. Screen catcher: catch BEHIND the line, take one look, throw deep to the streaker.",
     notes:
-      "Put your second-best thrower at the screen. The catch must stay behind the line so the deep throw is legal — check with the ref before the game.",
+      "Put your second-best thrower at the screen. The catch must stay behind the line so the deep throw is legal — check with the ref before the game. If the deep shot isn't there, the center is sitting in the middle — take the easy one.",
     tags: ["trick", "deep", "zone-beater"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "screen", side: "left" },
       { id: "r2", ...POS.left, route: "block", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "sit", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "post", side: "right" },
       { id: "r5", ...POS.farRight, route: "go", side: "right" },
     ],
@@ -688,12 +688,12 @@ export const PRESET_PLAYS: Play[] = [
     keyRead:
       "Big drop, count 'one-two-three-LAUNCH' — throw it high to the crowd. Trailer: catch anything that pops out.",
     notes:
-      "Jumpers: box out like rebounding a basketball. Trailer: DO NOT jump — stay under the pile for the tip.",
+      "Jumpers: box out like rebounding a basketball. Trailer: DO NOT jump — stay under the pile for the tip. Center sits short as the panic outlet if the launch window closes.",
     tags: ["trick", "deep", "third-long", "zone-beater"],
     receivers: [
       { id: "r1", ...POS.farLeft, route: "post", side: "left" },
       { id: "r2", ...POS.slotLeft, route: "go", side: "left" },
-      { id: "r3", ...POS.center, route: "block", side: "right", isCenter: true },
+      { id: "r3", ...POS.center, route: "sit", side: "right", isCenter: true },
       { id: "r4", ...POS.slotRight, route: "post", side: "right" },
       { id: "r5", ...POS.farRight, route: "curl", side: "right" },
     ],
