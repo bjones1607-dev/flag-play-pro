@@ -60,8 +60,11 @@ function PrintPlays() {
       </header>
 
       <section className="px-4 py-4 max-w-5xl mx-auto space-y-4 no-print">
+        <Link to="/designer">
+          <Button className="gap-1.5"><span className="font-display">+ CREATE A NEW PLAY</span></Button>
+        </Link>
         <PickList title="MY CUSTOM PLAYS" plays={customs} selected={selected} toggle={toggle}
-          empty="No custom plays yet — build one in the designer, then come back." />
+          empty="No custom plays yet — tap Create a New Play above, then come back." />
         <PickList title="PLAYBOOK" plays={PRESET_PLAYS} selected={selected} toggle={toggle} />
         <div className="flex gap-2">
           <Button size="sm" variant="secondary" onClick={() => { setTouched(true); setSelected([]); }}>Clear</Button>
