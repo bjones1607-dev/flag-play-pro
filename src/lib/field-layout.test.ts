@@ -9,9 +9,10 @@ describe("coach formation rules", () => {
     for (const play of PRESET_PLAYS) {
       const center = play.receivers.find((r) => r.isCenter);
       expect(center).toBeDefined();
+      if (!center) throw new Error(`Missing center in ${play.id}`);
       expect(play.qb.y).toBe(24);
-      expect(play.qb.x).toBe(center?.x);
-      expect(LOS_Y + play.qb.y * 0.5 - (LOS_Y + (center?.y ?? 0) * 0.4)).toBeGreaterThan(8);
+      expect(play.qb.x).toBe(center.x);
+      expect(LOS_Y + play.qb.y * 0.5 - (LOS_Y + center.y * 0.4)).toBeGreaterThan(8);
     }
   });
   test("receivers can move beside and behind the shotgun QB without leaving the field", () => {
