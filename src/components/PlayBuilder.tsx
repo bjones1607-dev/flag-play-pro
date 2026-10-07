@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Play, ReceiverRoute, RouteType, DefenseType, PlayTag, PlayType } from "@/lib/types";
-import { ALL_ROUTES, ALL_TAGS, RUN_ROUTES, ROUTE_LABELS, TAG_LABELS, CENTER_ROUTES, CENTER_ROUTE_TIPS } from "@/lib/routes";
+import { ALL_ROUTES, ALL_TAGS, RUN_ROUTES, ROUTE_LABELS, TAG_LABELS, CENTER_ROUTES } from "@/lib/routes";
+import { Printer } from "lucide-react";
 
 const RUN_SET = new Set<RouteType>(RUN_ROUTES);
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,7 @@ const SLOT_PRESETS = [
 interface Props {
   defense: DefenseType;
   initial?: Play | null;
-  onSaved: () => void;
+  onSaved: (print?: boolean) => void;
 }
 
 export function PlayBuilder({ defense, initial, onSaved }: Props) {
@@ -218,7 +219,7 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
     setTags((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]));
   };
 
-  const save = () => {
+  const save = (print = false) => {
     if (!name.trim()) {
       toast.error("Name your play first");
       return;
@@ -235,7 +236,7 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
       : [...customs, play];
     saveCustomPlays(next);
     toast.success(initial?.custom ? `Updated "${play.name}"` : `Saved "${play.name}"`);
-    onSaved();
+    onSaved(print);
   };
 
   const availableRoutes: RouteType[] = ALL_ROUTES;
@@ -279,7 +280,7 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
         </div>
       </div>
       <div className="space-y-3">
-        <Input placeholder="Play name" value={name} onChange={(e) => setName(e.target.value)} />
+        <Input aria-label="Play name" placeholder="Play name" value={name} onChange={(e) => setName(e.target.value)} />
 
         <div className="grid grid-cols-2 gap-2">
           <button
@@ -372,11 +373,6 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
                 ))}
               </SelectContent>
             </Select>
-            {CENTER_ROUTE_TIPS[routes[centerIdx]] && (
-              <p className="text-[10px] leading-snug text-muted-foreground italic">
-                {CENTER_ROUTE_TIPS[routes[centerIdx]]}
-              </p>
-            )}
           </div>
         )}
 
@@ -502,8 +498,11 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
           </div>
         </div>
 
-        <Button onClick={save} className="w-full" size="lg">
+        <Button onClick={() => save()} className="w-full" size="lg">
           {initial?.custom ? "Update Play" : "Save Play"}
+        </Button>
+        <Button onClick={() => save(true)} variant="secondary" className="w-full gap-2" size="lg">
+          <Printer className="h-4 w-4" /> Save & Print
         </Button>
       </div>
     </div>

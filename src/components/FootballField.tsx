@@ -22,6 +22,7 @@ interface Props {
   assignment?: PlayerAssignment;
   players?: Player[];
   showLabels?: boolean;
+  showRouteDescriptions?: boolean;
   big?: boolean; // larger labels/markers for huddle mode
   animate?: boolean; // animate routes drawing in
   animateKey?: number; // bump to retrigger animation
@@ -176,6 +177,7 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
     assignment = {},
     players = [],
     showLabels = true,
+    showRouteDescriptions = false,
     big = false,
     animate = false,
     animateKey = 0,
@@ -620,7 +622,7 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
                 {playerLabel(r.id) || (r.isCenter ? "C" : i + 1)}
               </text>
             )}
-            {showLabels && !isRunner && (
+            {showLabels && showRouteDescriptions && !isRunner && (
               <text
                 x={end[0]}
                 y={labelY}
@@ -639,7 +641,7 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
                 {r.route.toUpperCase()}
               </text>
             )}
-            {showLabels && big && !isRunner && r.route !== "block" && endYds > 0 && (
+            {showLabels && showRouteDescriptions && big && !isRunner && r.route !== "block" && endYds > 0 && (
               <text
                 x={end[0]}
                 y={labelY + 2.4}
@@ -658,7 +660,7 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
                 {endYds}YD
               </text>
             )}
-            {showLabels && isRunner && (
+            {showLabels && showRouteDescriptions && isRunner && (
               <text
                 x={end[0]}
                 y={labelY}
