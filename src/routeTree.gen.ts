@@ -9,49 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as DefenseRouteImport } from './routes/defense'
-import { Route as DesignerRouteImport } from './routes/designer'
-import { Route as HalftimeRouteImport } from './routes/halftime'
-import { Route as PlaysheetRouteImport } from './routes/playsheet'
-import { Route as PracticeRouteImport } from './routes/practice'
-import { Route as PrintPlaysRouteImport } from './routes/print-plays'
-import { Route as StatsRouteImport } from './routes/stats'
 import { Route as WristbandRouteImport } from './routes/wristband'
+import { Route as StatsRouteImport } from './routes/stats'
+import { Route as PrintPlaysRouteImport } from './routes/print-plays'
+import { Route as PracticeRouteImport } from './routes/practice'
+import { Route as PlaysheetRouteImport } from './routes/playsheet'
+import { Route as HalftimeRouteImport } from './routes/halftime'
+import { Route as DesignerRouteImport } from './routes/designer'
+import { Route as DefenseRouteImport } from './routes/defense'
+import { Route as IndexRouteImport } from './routes/index'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DefenseRoute = DefenseRouteImport.update({
-  id: '/defense',
-  path: '/defense',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DesignerRoute = DesignerRouteImport.update({
-  id: '/designer',
-  path: '/designer',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HalftimeRoute = HalftimeRouteImport.update({
-  id: '/halftime',
-  path: '/halftime',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlaysheetRoute = PlaysheetRouteImport.update({
-  id: '/playsheet',
-  path: '/playsheet',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PracticeRoute = PracticeRouteImport.update({
-  id: '/practice',
-  path: '/practice',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrintPlaysRoute = PrintPlaysRouteImport.update({
-  id: '/print-plays',
-  path: '/print-plays',
+const WristbandRoute = WristbandRouteImport.update({
+  id: '/wristband',
+  path: '/wristband',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StatsRoute = StatsRouteImport.update({
@@ -59,9 +29,39 @@ const StatsRoute = StatsRouteImport.update({
   path: '/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WristbandRoute = WristbandRouteImport.update({
-  id: '/wristband',
-  path: '/wristband',
+const PrintPlaysRoute = PrintPlaysRouteImport.update({
+  id: '/print-plays',
+  path: '/print-plays',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PracticeRoute = PracticeRouteImport.update({
+  id: '/practice',
+  path: '/practice',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlaysheetRoute = PlaysheetRouteImport.update({
+  id: '/playsheet',
+  path: '/playsheet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HalftimeRoute = HalftimeRouteImport.update({
+  id: '/halftime',
+  path: '/halftime',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesignerRoute = DesignerRouteImport.update({
+  id: '/designer',
+  path: '/designer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DefenseRoute = DefenseRouteImport.update({
+  id: '/defense',
+  path: '/defense',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -149,53 +149,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/defense': {
-      id: '/defense'
-      path: '/defense'
-      fullPath: '/defense'
-      preLoaderRoute: typeof DefenseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/designer': {
-      id: '/designer'
-      path: '/designer'
-      fullPath: '/designer'
-      preLoaderRoute: typeof DesignerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/halftime': {
-      id: '/halftime'
-      path: '/halftime'
-      fullPath: '/halftime'
-      preLoaderRoute: typeof HalftimeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/playsheet': {
-      id: '/playsheet'
-      path: '/playsheet'
-      fullPath: '/playsheet'
-      preLoaderRoute: typeof PlaysheetRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/practice': {
-      id: '/practice'
-      path: '/practice'
-      fullPath: '/practice'
-      preLoaderRoute: typeof PracticeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/print-plays': {
-      id: '/print-plays'
-      path: '/print-plays'
-      fullPath: '/print-plays'
-      preLoaderRoute: typeof PrintPlaysRouteImport
+    '/wristband': {
+      id: '/wristband'
+      path: '/wristband'
+      fullPath: '/wristband'
+      preLoaderRoute: typeof WristbandRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/stats': {
@@ -205,11 +163,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/wristband': {
-      id: '/wristband'
-      path: '/wristband'
-      fullPath: '/wristband'
-      preLoaderRoute: typeof WristbandRouteImport
+    '/print-plays': {
+      id: '/print-plays'
+      path: '/print-plays'
+      fullPath: '/print-plays'
+      preLoaderRoute: typeof PrintPlaysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/practice': {
+      id: '/practice'
+      path: '/practice'
+      fullPath: '/practice'
+      preLoaderRoute: typeof PracticeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/playsheet': {
+      id: '/playsheet'
+      path: '/playsheet'
+      fullPath: '/playsheet'
+      preLoaderRoute: typeof PlaysheetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/halftime': {
+      id: '/halftime'
+      path: '/halftime'
+      fullPath: '/halftime'
+      preLoaderRoute: typeof HalftimeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/designer': {
+      id: '/designer'
+      path: '/designer'
+      fullPath: '/designer'
+      preLoaderRoute: typeof DesignerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/defense': {
+      id: '/defense'
+      path: '/defense'
+      fullPath: '/defense'
+      preLoaderRoute: typeof DefenseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
