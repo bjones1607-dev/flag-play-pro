@@ -272,7 +272,16 @@ function Designer() {
                   <Plus className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="h-[92vh] overflow-y-auto">
+              <SheetContent
+                side="bottom"
+                className="h-[92dvh] overflow-y-auto"
+                // Only the X button closes the builder. Phone keyboards, stray taps
+                // above the panel, or focus jumps must never throw away a play in progress.
+                onPointerDownOutside={(e) => e.preventDefault()}
+                onInteractOutside={(e) => e.preventDefault()}
+                onFocusOutside={(e) => e.preventDefault()}
+                onEscapeKeyDown={(e) => e.preventDefault()}
+              >
                 <SheetHeader>
                   <SheetTitle className="font-display text-2xl">{builderTitle}</SheetTitle>
                   <SheetDescription className="sr-only">
