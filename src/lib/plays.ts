@@ -1,6 +1,7 @@
 import type { Play } from "./types";
+import { SHOTGUN_QB } from "./field-layout";
 
-const QB = { x: 50, y: 12 };
+const QB = SHOTGUN_QB;
 
 // Standard receiver start positions (y = 4 just above LOS, on LOS)
 const POS = {

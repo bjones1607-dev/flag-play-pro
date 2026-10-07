@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Save, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
+import { receiverSlotLabel } from "@/lib/field-layout";
 
 interface Props {
   play: Play;
@@ -41,7 +42,7 @@ export function AssignmentPanel({ play }: Props) {
   const slots = [
     { id: "qb", label: "QB" },
     ...play.receivers.map((r, i) => {
-      const tag = r.isCenter ? "C" : r.isRunner ? "BALL" : `R${i + 1}`;
+      const tag = r.isCenter ? "C" : `R${receiverSlotLabel(play.receivers, i)}${r.isRunner ? " · BALL" : ""}`;
       return { id: r.id, label: `${tag} · ${r.route.toUpperCase()}` };
     }),
   ];
