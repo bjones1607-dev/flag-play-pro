@@ -27,6 +27,7 @@ interface Props {
   animateKey?: number; // bump to retrigger animation
   onReceiverMove?: (id: string, x: number, y: number) => void;
   onQbMove?: (x: number, y: number) => void;
+  onRouteEndMove?: (id: string, x: number, y: number) => void;
 }
 
 export interface FootballFieldHandle {
@@ -179,13 +180,14 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
     animate = false,
     animateKey = 0,
     onReceiverMove,
+    onRouteEndMove,
     onQbMove,
   },
   ref,
 ) {
   const svgRef = useRef<SVGSVGElement>(null);
   const draggingRef = useRef<string | null>(null);
-  const draggable = !!onReceiverMove || !!onQbMove;
+  const draggable = !!onReceiverMove || !!onQbMove || !!onRouteEndMove;
 
   useImperativeHandle(ref, () => ({ svg: () => svgRef.current }));
 
@@ -223,7 +225,9 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
     if (!id) return;
     const { x, y } = toSvgCoords(e.clientX, e.clientY);
     const cx = Math.max(4, Math.min(96, x));
-    if (id === "qb") {
+    if (id.startsWith("end:")) {
+      onRouteEndMove?.(id.slice(4), Math.max(2, Math.min(98, x)), Math.max(1, Math.min(95, y)));
+    } else if (id === "qb") {
       const depth = Math.max(0, Math.min(28, (y - LOS) / 0.5));
       onQbMove?.(cx, depth);
     } else {
@@ -537,7 +541,12 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
           );
         }
 
-        const pts = routeSvgPoints(r.route, r.x, r.y, r.side ?? "right");
+        const baseSide = r.side ?? "right";
+        const pts = routeSvgPoints(r.route, r.x, r.y, r.flip ? (baseSide === "right" ? "left" : "right") : baseSide);
+        if (r.routeEnd) {
+          if (pts.length < 2) pts.push([r.routeEnd.x, r.routeEnd.y]);
+          else pts[pts.length - 1] = [r.routeEnd.x, r.routeEnd.y];
+        }
         const d = pts.map((p, idx) => `${idx === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
         const end = pts[pts.length - 1];
         const labelY = end[1] < 8 ? end[1] + 4 : end[1] - 1.8;
@@ -574,6 +583,20 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
                   : undefined
               }
             />
+            {onRouteEndMove && (
+              <circle
+                cx={end[0]}
+                cy={end[1]}
+                r={2.2}
+                fill={color}
+                fillOpacity={0.35}
+                stroke="var(--chalk)"
+                strokeWidth={0.3}
+                strokeDasharray="0.8 0.5"
+                style={{ cursor: "grab" }}
+                onPointerDown={startDrag(`end:${r.id}`)}
+              />
+            )}
             <circle
               cx={start[0]}
               cy={start[1]}

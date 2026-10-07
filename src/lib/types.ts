@@ -59,6 +59,8 @@ export interface ReceiverRoute {
   side?: "left" | "right";
   isCenter?: boolean;
   isRunner?: boolean;
+  flip?: boolean; // break the route the opposite direction
+  routeEnd?: { x: number; y: number }; // dragged end point (field coords)
 }
 
 export interface MotionPath {
