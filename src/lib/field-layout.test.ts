@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 import { PRESET_PLAYS } from "./plays";
 import { LOS_Y, playerDepthFromFieldY, receiverSlotLabel } from "./field-layout";
