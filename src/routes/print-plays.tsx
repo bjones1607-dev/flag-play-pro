@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PRESET_PLAYS } from "@/lib/plays";
-import { ROUTE_LABELS } from "@/lib/routes";
 import { FootballField } from "@/components/FootballField";
 import { useCustomPlays } from "@/hooks/use-storage";
 import { Button } from "@/components/ui/button";
@@ -116,9 +115,6 @@ function PlayCard({ play, num }: { play: Play; num: number }) {
       </div>
       <div className="print-field"><FootballField play={play} showLabels /></div>
       <div className="mt-2 text-sm space-y-0.5">
-        <div className="text-xs text-muted-foreground">
-          {play.receivers.map((r, i) => `${r.isCenter ? "C" : `R${i + 1}`}: ${ROUTE_LABELS[r.route] ?? r.route}`).join(" · ")}
-        </div>
         {play.keyRead && <div><b>QB reads:</b> {play.keyRead}</div>}
         {play.purpose && <div><b>Why:</b> {play.purpose}</div>}
         {play.notes && <div><b>Notes:</b> {play.notes}</div>}

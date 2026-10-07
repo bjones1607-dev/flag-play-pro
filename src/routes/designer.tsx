@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DefenseType, Play, PlayTag } from "@/lib/types";
 import { PRESET_PLAYS } from "@/lib/plays";
@@ -50,12 +50,17 @@ export const Route = createFileRoute("/designer")({
         content:
           "Coach 6v6 flag football: visualize routes, assign players, design custom plays, and show them to the kids in the huddle.",
       },
+      { property: "og:title", content: "Play Designer — Flag 6v6" },
+      { property: "og:description", content: "Name, draw, save, and print your custom flag football plays." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Designer,
 });
 
 function Designer() {
+  const navigate = useNavigate();
   const [defense, setDefense] = useState<DefenseType>("zone");
   const [customs, setCustoms] = useCustomPlays();
   const players = usePlayers();
@@ -279,9 +284,10 @@ function Designer() {
                   <PlayBuilder
                     defense={editingPlay?.defense ?? defense}
                     initial={editingPlay}
-                    onSaved={() => {
+                    onSaved={(print) => {
                       setBuilderOpen(false);
                       setEditingPlay(null);
+                      if (print) void navigate({ to: "/print-plays" });
                     }}
                   />
                 </div>
@@ -439,21 +445,6 @@ function Designer() {
                     </div>
                   </Card>
                 )}
-                <Card label="Routes">
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {current.receivers.map((r, i) => (
-                      <span
-                        key={r.id}
-                        className="px-2 py-1 rounded text-xs font-display tracking-wide"
-                        style={{ background: `var(--route-${(i % 5) + 1})`, color: "#0a1a0e" }}
-                      >
-                        R{i + 1} {r.route.toUpperCase()}
-                        {r.isCenter ? " (C)" : ""}
-                        {r.isRunner ? " · BALL" : ""}
-                      </span>
-                    ))}
-                  </div>
-                </Card>
               </TabsContent>
 
               <TabsContent value="assign" className="mt-4">
