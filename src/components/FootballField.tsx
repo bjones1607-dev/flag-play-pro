@@ -187,7 +187,7 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
 ) {
   const svgRef = useRef<SVGSVGElement>(null);
   const draggingRef = useRef<string | null>(null);
-  const draggable = !!onReceiverMove || !!onQbMove;
+  const draggable = !!onReceiverMove || !!onQbMove || !!onRouteEndMove;
 
   useImperativeHandle(ref, () => ({ svg: () => svgRef.current }));
 

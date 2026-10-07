@@ -50,8 +50,12 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
         tags: [] as PlayTag[],
         playType: "pass" as PlayType,
         qbAction: "pass" as Play["qbAction"],
+        flips: [] as boolean[],
+        ends: [] as ({ x: number; y: number } | undefined)[],
       };
     }
+    const flips: boolean[] = [];
+    const ends: ({ x: number; y: number } | undefined)[] = [];
     const positions = SLOT_PRESETS.map((p) => ({ x: p.x, y: p.y }));
     const routes: RouteType[] = ["go", "slant", "delay", "out", "flat"] as RouteType[];
     let runnerIdx = -1;
@@ -61,6 +65,8 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
       routes[i] = r.route;
       if (r.isRunner) runnerIdx = i;
       if (r.isCenter) centerIdx = i;
+      flips[i] = !!r.flip;
+      ends[i] = r.routeEnd;
     });
     return {
       name: initial.name,
@@ -77,6 +83,8 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
       tags: initial.tags ?? [],
       playType: initial.playType ?? "pass",
       qbAction: initial.qbAction ?? "pass",
+      flips,
+      ends,
     };
   }, [initial]);
 
@@ -94,6 +102,8 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
   const [centerIdx, setCenterIdx] = useState(seed.centerIdx);
   const [playType, setPlayType] = useState<PlayType>(seed.playType);
   const [qbAction, setQbAction] = useState<Play["qbAction"]>(seed.qbAction);
+  const [flips, setFlips] = useState<boolean[]>(seed.flips);
+  const [ends, setEnds] = useState<({ x: number; y: number } | undefined)[]>(seed.ends);
 
   // Re-seed when switching plays in/out of editor
   useEffect(() => {
@@ -111,6 +121,8 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
     setCenterIdx(seed.centerIdx);
     setPlayType(seed.playType);
     setQbAction(seed.qbAction);
+    setFlips(seed.flips);
+    setEnds(seed.ends);
   }, [seed]);
 
   const receivers: ReceiverRoute[] = SLOT_PRESETS.slice(0, count).map((p, i) => {
@@ -129,6 +141,8 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
       route,
       isRunner: isRunner || undefined,
       isCenter: isCenter || undefined,
+      flip: flips[i] || undefined,
+      routeEnd: ends[i],
     };
   });
 
@@ -160,7 +174,23 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
     });
   };
 
+  const moveRouteEnd = (id: string, x: number, y: number) => {
+    const idx = SLOT_PRESETS.findIndex((s) => s.id === id);
+    if (idx < 0) return;
+    setEnds((prev) => {
+      const next = [...prev];
+      next[idx] = snap ? { x: snapVal(x, 2), y: snapVal(y, 2) } : { x, y };
+      return next;
+    });
+  };
+
+  const toggleFlip = (i: number) => {
+    setFlips((prev) => { const n = [...prev]; n[i] = !n[i]; return n; });
+    setEnds((prev) => { const n = [...prev]; n[i] = undefined; return n; });
+  };
+
   const mirror = () => {
+    setEnds((prev) => prev.map((e) => (e ? { x: 100 - e.x, y: e.y } : e)));
     setPositions((prev) => prev.map((p) => ({ x: 100 - p.x, y: p.y })));
     setQb((q) => ({ x: 100 - q.x, y: q.y }));
     if (qbAction === "keep-left") setQbAction("keep-right");
@@ -171,6 +201,8 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
   const reset = () => {
     setPositions(SLOT_PRESETS.map((p) => ({ x: p.x, y: p.y })));
     setQb({ x: 50, y: 12 });
+    setEnds([]);
+    setFlips([]);
     toast("Positions reset");
   };
 
@@ -178,6 +210,8 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
     const next = [...routes];
     next[i] = r;
     setRoutes(next);
+    // New route = fresh shape; drop any dragged end point
+    setEnds((prev) => { const n = [...prev]; n[i] = undefined; return n; });
   };
 
   const toggleTag = (t: PlayTag) => {
@@ -210,12 +244,13 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
     <div className="space-y-4">
       <div className="rounded-xl border border-primary/30 bg-primary/5 p-2">
         <p className="text-[10px] uppercase tracking-widest text-primary font-display text-center mb-2">
-          Drag receivers & QB · Pick routes below
+          Drag players · Drag the dashed circle at each arrow tip to aim the route
         </p>
         <FootballField
           play={previewPlay}
           onReceiverMove={moveReceiver}
           onQbMove={(x, y) => setQb({ x, y })}
+          onRouteEndMove={moveRouteEnd}
         />
         <div className="flex flex-wrap gap-1.5 mt-2 justify-center">
           <button
@@ -357,6 +392,16 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
                     {isCenter ? "C" : `R${i + 1}`}
                   </label>
                   <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => toggleFlip(i)}
+                      title="Break the route the other direction"
+                      className={`text-[9px] px-1.5 py-0.5 rounded font-display tracking-wider ${
+                        flips[i] ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                      }`}
+                    >
+                      ⇄ FLIP
+                    </button>
                     {playType === "run" && (
                       <button
                         type="button"
