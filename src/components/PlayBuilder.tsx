@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Play, ReceiverRoute, RouteType, DefenseType, PlayTag, PlayType } from "@/lib/types";
 import { ALL_ROUTES, ALL_TAGS, RUN_ROUTES, ROUTE_LABELS, TAG_LABELS, CENTER_ROUTES } from "@/lib/routes";
 import { Printer } from "lucide-react";
+import { SHOTGUN_QB, receiverSlotLabel } from "@/lib/field-layout";
 
 const RUN_SET = new Set<RouteType>(RUN_ROUTES);
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,7 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
         routes: ["go", "slant", "delay", "out", "flat"] as RouteType[],
         runnerIdx: -1,
         centerIdx: 2,
-        qb: { x: 50, y: 12 },
+        qb: { ...SHOTGUN_QB },
         purpose: "",
         keyRead: "",
         formation: "",
@@ -60,7 +61,7 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
     const positions = SLOT_PRESETS.map((p) => ({ x: p.x, y: p.y }));
     const routes: RouteType[] = ["go", "slant", "delay", "out", "flat"] as RouteType[];
     let runnerIdx = -1;
-    let centerIdx = -1;
+    let centerIdx = Math.min(2, initial.receivers.length - 1);
     initial.receivers.forEach((r, i) => {
       positions[i] = { x: r.x, y: r.y };
       routes[i] = r.route;
@@ -201,7 +202,7 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
 
   const reset = () => {
     setPositions(SLOT_PRESETS.map((p) => ({ x: p.x, y: p.y })));
-    setQb({ x: 50, y: 12 });
+    setQb({ ...SHOTGUN_QB });
     setEnds([]);
     setFlips([]);
     toast("Positions reset");
@@ -338,7 +339,10 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
                 key={n}
                 size="sm"
                 variant={count === n ? "default" : "secondary"}
-                onClick={() => setCount(n)}
+                onClick={() => {
+                  setCount(n);
+                  if (centerIdx < 0 || centerIdx >= n) setCenterIdx(n - 1);
+                }}
                 className="w-9 h-9 p-0"
               >
                 {n}
@@ -352,7 +356,7 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
           <div className="space-y-2 rounded-lg border border-foreground/30 bg-foreground/5 p-2">
             <div className="flex items-center justify-between">
               <div className="text-xs font-display tracking-widest text-foreground">
-                CENTER ROUTE · R{centerIdx + 1}
+                CENTER ROUTE · C
               </div>
               <span className="text-[9px] font-display tracking-wider text-muted-foreground">
                 SHORT RELEASES
@@ -385,7 +389,7 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
               <div key={i} className="space-y-1">
                 <div className="flex items-center justify-between gap-1">
                   <label className="text-xs font-display text-muted-foreground">
-                    {isCenter ? "C" : `R${i + 1}`}
+                    {isCenter ? "C" : `R${receiverSlotLabel(receivers, i)}`}
                   </label>
                   <div className="flex gap-1">
                     <button
@@ -421,9 +425,9 @@ export function PlayBuilder({ defense, initial, onSaved }: Props) {
                     <button
                       type="button"
                       onClick={() => {
-                        const becoming = !isCenter;
-                        setCenterIdx(isCenter ? -1 : i);
-                        if (becoming && !CENTER_ROUTES.includes(routes[i])) {
+                        if (isCenter) return;
+                        setCenterIdx(i);
+                        if (!CENTER_ROUTES.includes(routes[i])) {
                           setRouteAt(i, "delay");
                         }
                       }}

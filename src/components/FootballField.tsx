@@ -1,6 +1,7 @@
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import type { Play, Player, PlayerAssignment, RouteType } from "@/lib/types";
 import { defensePositions } from "@/lib/plays";
+import { playerDepthFromFieldY, receiverSlotLabel } from "@/lib/field-layout";
 
 const ROUTE_COLORS = [
   "var(--route-1)",
@@ -230,10 +231,10 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
     if (id.startsWith("end:")) {
       onRouteEndMove?.(id.slice(4), Math.max(2, Math.min(98, x)), Math.max(1, Math.min(95, y)));
     } else if (id === "qb") {
-      const depth = Math.max(0, Math.min(28, (y - LOS) / 0.5));
+      const depth = playerDepthFromFieldY(y, "qb");
       onQbMove?.(cx, depth);
     } else {
-      const depth = Math.max(0, Math.min(20, (y - LOS) / 0.4));
+      const depth = playerDepthFromFieldY(y, "receiver");
       onReceiverMove?.(id, cx, depth);
     }
   };
@@ -536,7 +537,7 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
                   fontWeight="800"
                   style={{ pointerEvents: "none" }}
                 >
-                  {playerLabel(r.id) || (r.isCenter ? "C" : i + 1)}
+                  {playerLabel(r.id) || receiverSlotLabel(play.receivers, i)}
                 </text>
               )}
             </g>
@@ -619,7 +620,7 @@ export const FootballField = forwardRef<FootballFieldHandle, Props>(function Foo
                 fontWeight="800"
                 style={{ pointerEvents: "none" }}
               >
-                {playerLabel(r.id) || (r.isCenter ? "C" : i + 1)}
+                {playerLabel(r.id) || receiverSlotLabel(play.receivers, i)}
               </text>
             )}
             {showLabels && showRouteDescriptions && !isRunner && (
