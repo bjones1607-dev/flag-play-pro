@@ -147,7 +147,15 @@
     break-inside: avoid;
     border-color: #000 !important;
   }
-}
+  }
+
+  /* Custom play printing: 2 per page */
+  .print-plays-area { max-width: none !important; padding: 0 !important; }
+  .print-plays-area .print-page { break-after: page; display: flex; flex-direction: column; gap: 8pt; }
+  .print-plays-area .print-page:last-child { break-after: auto; }
+  .print-plays-area .print-card { break-inside: avoid; border-color: #000 !important; height: 4.9in; overflow: hidden; }
+  .print-plays-area .print-field { max-height: 3.4in; max-width: 3.6in; margin: 0 auto; }
+  .print-plays-area .print-card, .print-plays-area .print-card * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .print-only { display: none; }
 
 

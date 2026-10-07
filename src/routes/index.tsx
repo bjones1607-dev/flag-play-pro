@@ -220,6 +220,11 @@ function GameDay() {
                     <Watch className="h-4 w-4" /> Wristband Cards
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/print-plays" className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" /> Print My Plays
+                  </Link>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

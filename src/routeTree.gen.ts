@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WristbandRouteImport } from './routes/wristband'
 import { Route as StatsRouteImport } from './routes/stats'
+import { Route as PrintPlaysRouteImport } from './routes/print-plays'
 import { Route as PracticeRouteImport } from './routes/practice'
 import { Route as PlaysheetRouteImport } from './routes/playsheet'
 import { Route as HalftimeRouteImport } from './routes/halftime'
@@ -26,6 +27,11 @@ const WristbandRoute = WristbandRouteImport.update({
 const StatsRoute = StatsRouteImport.update({
   id: '/stats',
   path: '/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrintPlaysRoute = PrintPlaysRouteImport.update({
+  id: '/print-plays',
+  path: '/print-plays',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PracticeRoute = PracticeRouteImport.update({
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/halftime': typeof HalftimeRoute
   '/playsheet': typeof PlaysheetRoute
   '/practice': typeof PracticeRoute
+  '/print-plays': typeof PrintPlaysRoute
   '/stats': typeof StatsRoute
   '/wristband': typeof WristbandRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/halftime': typeof HalftimeRoute
   '/playsheet': typeof PlaysheetRoute
   '/practice': typeof PracticeRoute
+  '/print-plays': typeof PrintPlaysRoute
   '/stats': typeof StatsRoute
   '/wristband': typeof WristbandRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/halftime': typeof HalftimeRoute
   '/playsheet': typeof PlaysheetRoute
   '/practice': typeof PracticeRoute
+  '/print-plays': typeof PrintPlaysRoute
   '/stats': typeof StatsRoute
   '/wristband': typeof WristbandRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/halftime'
     | '/playsheet'
     | '/practice'
+    | '/print-plays'
     | '/stats'
     | '/wristband'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/halftime'
     | '/playsheet'
     | '/practice'
+    | '/print-plays'
     | '/stats'
     | '/wristband'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/halftime'
     | '/playsheet'
     | '/practice'
+    | '/print-plays'
     | '/stats'
     | '/wristband'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   HalftimeRoute: typeof HalftimeRoute
   PlaysheetRoute: typeof PlaysheetRoute
   PracticeRoute: typeof PracticeRoute
+  PrintPlaysRoute: typeof PrintPlaysRoute
   StatsRoute: typeof StatsRoute
   WristbandRoute: typeof WristbandRoute
 }
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/stats'
       fullPath: '/stats'
       preLoaderRoute: typeof StatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/print-plays': {
+      id: '/print-plays'
+      path: '/print-plays'
+      fullPath: '/print-plays'
+      preLoaderRoute: typeof PrintPlaysRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/practice': {
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   HalftimeRoute: HalftimeRoute,
   PlaysheetRoute: PlaysheetRoute,
   PracticeRoute: PracticeRoute,
+  PrintPlaysRoute: PrintPlaysRoute,
   StatsRoute: StatsRoute,
   WristbandRoute: WristbandRoute,
 }
